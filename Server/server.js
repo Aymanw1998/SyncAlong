@@ -3,6 +3,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const colors = require('colors');
+const cookieParser = require('cookie-parser');
+
 const errorHandler = require('./middleware/err');
 const connectDB = require('./config/db');
 const socket = require('socket.io');
@@ -21,12 +23,15 @@ app.use(express.urlencoded({ extended: false }));
 // Set Static folder
 app.use(express.static('public'));
 
+// Cookie parser when login user
+app.use(cookieParser());
+
 // Enable CORS
 app.all('*', function (req, res, next) {
   if (!req.get('Origin')) return next();
   res.set('Access-Control-Allow-Origin', '*');
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-  res.set('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,x-auth-token,x-api-key');
+  res.set('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,authorization');
   next();
 });
 

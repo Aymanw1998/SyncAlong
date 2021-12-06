@@ -2,8 +2,7 @@ const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const { createToken } = require('../utils/tokenResponse');
 const { successResponse } = require('../utils/successResponse');
-
-const { validate, User } = require('../models/users');
+const { User } = require('../models/users');
 const bcrypt = require('bcrypt');
 const gravatar = require('gravatar');
 
@@ -69,7 +68,6 @@ const searchUserByQuery = async (req, res, next) => {
 // @route   GET /api/users/
 // @access  Privit with token
 const getUser = async (req, res, next) => {
-  console.log('ddddd', req._id);
   try {
     const user = await User.findById(req._id);
     res.status(200).json({
@@ -144,12 +142,7 @@ const loginUser = async (req, res, next) => {
         return next(new ErrorResponse(`Password does not match`, 401));
       }
       else {
-        let token = createToken(user._id, user.email, user.username);
-        console.log(token);
-        res.status(200).json({
-          success: true,
-          token: token
-        });
+        sendTokenResponse(user, 200, res);
       }
     }
     else {
@@ -163,36 +156,17 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-
 // @desc    Update user
 // @route   PUT /api/users/
 // @access  Private
 const updateUser = async (req, res, next) => {
   try {
-    const { error } = validate(req.body);
-    if (error) {
-      return res.status(error.status).send(error);
-    }
-    const { username, password, email } = req.body;
-    const user = await User.findById(req._id);
-    if (req.params.username !== username) {
-      return res.status(401).json({
-        success: false,
-        msg: "username is not match in url and body"
-      });
-    }
-    const updateUser = new user({
-      _id: User._id,
-      username: username,
-      password: password,
-      email: email,
-    });
-    console.log(updateUser);
-    await user.updateOne({ _id: updateUser._id }, updateUser);
+    req.updateAt = Date.now;
+    let data = await User.updateOne({ _id: req.user.id }, req.body);
+    res.json(data);
     res.status(200).json({
       success: true,
-      msg: `Update user with username: ${req.params.username}`,
-      user: updateUser
+      data: data,
     });
   } catch (err) {
     next(err);
@@ -204,25 +178,17 @@ const updateUser = async (req, res, next) => {
 // @access  Private
 const deleteUser = async (req, res, next) => {
   try {
-    console.log('Hi');
-    const User = await user.findOne({ username: req.params.username }).select('-__v');
-    if (!User) {
-      return res.status(401).json({
-        success: false,
-        msg: "the user with username: " + req.params.username + " is not exist"
+    User.deleteOne({ _id: req.user.id }, (err, data) => {
+      if (err) {
+        return next(new ErrorResponse(`delet failed`, 400));
+      }
+      res.status(200).json({
+        success: true,
+        data: data,
       });
-    }
-    console.log(User);
-    await user.deleteOne({ _id: User._id });
-    res.status(200).json({
-      success: true,
-      msg: `Delete user with username: ${id}`,
-    });
+    })
   } catch (err) {
-    res.status(err.status).json({
-      success: false,
-      msg: err.message
-    });
+    next(err);
   }
 };
 
@@ -235,4 +201,27 @@ module.exports = {
   getUserById,
   loginUser,
   searchUserByQuery
+};
+
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create token
+  let token = createToken(user._id, user.email, user.username);
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res.status(statusCode).cookie('token', token, options).json({
+    success: true,
+    token,
+  });
 };

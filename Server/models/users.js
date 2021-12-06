@@ -29,14 +29,6 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     index: true
   },
-  // pass: {
-  //   type: String,
-  //   unique: true,
-  //   required: [true, "Please add a password"],
-  //   minlength: 6,
-  //   index: true
-  // },
-  resetPasswordToken: String,
   avatar: String,
   createdAt: {
     type: Date, default: Date.now
@@ -54,21 +46,5 @@ const userSchema = new mongoose.Schema({
     ref: 'users'
   }
 });
-
-userSchema.methods.generateAuthToken = () => {
-  const token = jwt.sign({ _id: this._id }, process.env.JWTPRIVATEKEY);
-  return token;
-};
 const User = mongoose.model('users', userSchema);
-
-const validate = (user) => {
-  const schema = Joi.object({
-    user: Joi.string().required(),
-    username: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().required()
-  });
-  return schema.validate(user);
-};
-
-module.exports = { User, validate };
+module.exports = { User };

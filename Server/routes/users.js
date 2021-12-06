@@ -1,5 +1,5 @@
 const express = require('express');
-const { authToken } = require('../middleware/auth');
+const { protect } = require('../middleware/auth');
 
 const {
   getUsers,
@@ -15,10 +15,9 @@ const router = express.Router();
 
 router.route('/').get(getUsers).post(createUser);
 router.route('/search').get(searchUserByQuery);
-router.route('/', authToken).get(getUser).put(updateUser).delete(deleteUser);
+router.route('/').put(protect, updateUser).delete(protect, deleteUser);
+router.route('/loged').get(protect, getUser);
 router.route('/login').post(loginUser);
-router.route('/:id').get(getUserById);
-
-//router.route('/:id').get(getUser).put(updateUser).delete(deleteUser);
+router.route('/user/:id').get(getUserById);
 
 module.exports = router;

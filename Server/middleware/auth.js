@@ -1,22 +1,34 @@
 const jwt = require("jsonwebtoken");
+const asyncHandler = require('./async');
+const ErrorResponse = require('../utils/errorResponse');
+const { User } = require('../models/users');
 
 //for privit routes
 // Checks whether the token of tha user is valid or not
-const authToken = (req, res, next) => {
-    const token = req.header('x-auth-token');
+exports.protect = asyncHandler(async (req, res, next) => {
+    // let token = req.header('authorization');
+    let token;
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        // Set token from Bearer token in header
+        token = req.headers.authorization.split(' ')[1];
+    }
+
     if (!token) {
-        res.status(403).json({ message: 'Access denied' });
+        return next(new ErrorResponse('Not authorized Access denied', 403));
     }
     try {
-        const decoded = jwt.verify(token, process.env.JWTPRIVATEKEY);
+        const decoded = jwt.verify(token, process.env.TOKEN);
+        console.log('decoded', decoded);
+        req.user = await User.findById(decoded._id);
         req.email = decoded.email;
         req._id = decoded._id
-        req.user = decoded.user;
         next();
     }
     catch (err) {
         // If the token is incorrect
-        return res.status(400).json(err)
+        return next(new ErrorResponse('Not authorized to access this route', 401));
     }
-};
-exports.authToken = authToken;
+});
