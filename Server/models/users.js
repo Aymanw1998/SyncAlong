@@ -25,11 +25,23 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    minlength: [6, 'password must be 6 digits long'],
     required: [true, "Please add a password"],
+    minlength: 6,
+    index: true
   },
+  // pass: {
+  //   type: String,
+  //   unique: true,
+  //   required: [true, "Please add a password"],
+  //   minlength: 6,
+  //   index: true
+  // },
+  resetPasswordToken: String,
   avatar: String,
   createdAt: {
+    type: Date, default: Date.now
+  },
+  updateAt: {
     type: Date, default: Date.now
   },
   role: {
@@ -37,6 +49,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'elderly'],
     default: 'user',
   },
+  director: {  //Indicates of the user-manager of this user (only one menger!)
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
+  }
 });
 
 userSchema.methods.generateAuthToken = () => {

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
-// const asyncHandler = require("async");
 
 //for privit routes
+// Checks whether the token of tha user is valid or not
 const authToken = (req, res, next) => {
     const token = req.header('x-auth-token');
     if (!token) {

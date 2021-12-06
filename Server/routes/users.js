@@ -8,11 +8,13 @@ const {
   updateUser,
   deleteUser,
   getUserById,
-  loginUser
+  loginUser,
+  searchUserByQuery,
 } = require('../controllers/users');
 const router = express.Router();
 
 router.route('/').get(getUsers).post(createUser);
+router.route('/search').get(searchUserByQuery);
 router.route('/', authToken).get(getUser).put(updateUser).delete(deleteUser);
 router.route('/login').post(loginUser);
 router.route('/:id').get(getUserById);
