@@ -20,8 +20,7 @@ connectDB();
 //Middleware 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// Set Static folder
-app.use(express.static('public'));
+
 
 // Cookie parser when login user
 app.use(cookieParser());

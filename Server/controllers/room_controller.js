@@ -1,14 +1,6 @@
 const path = require('path');
 const { validate, room } = require('../models/room_model');
 
-// @desc    View index.html
-// @route   POST /api/rooms/:id
-// @access  Private
-const viewRoom = (req, res, next) => {
-  console.log(path.join(__dirname, '..', 'public', 'index.html'));
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-};
-
 // @desc    Get all rooms
 // @route   GET /api/rooms/
 // @access  Public
