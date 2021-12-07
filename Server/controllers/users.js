@@ -12,6 +12,7 @@ const gravatar = require('gravatar');
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
+    console.log(users);
     return successResponse(req, res, { users });
   } catch (e) {
     next(new ErrorResponse('users not found', 404));
@@ -31,11 +32,14 @@ const searchUserByQuery = async (req, res, next) => {
     //Fielde to exclude
     const removeFields = ['selct', 'sort'];
     // Loop over removeField and delete them from the reqQuery
-    removeFields.forEach(pram => delete reqQuery[pram])
+    removeFields.forEach((pram) => delete reqQuery[pram]);
     // Create query string
     let querStr = JSON.stringify(req.query);
     // Create operators ($gt ,$gte etc)
-    querStr = querStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`)  //g refrisent glabal 
+    querStr = querStr.replace(
+      /\b(gt|gte|lt|lte|in)\b/g,
+      (match) => `$${match}`
+    ); //g refrisent glabal
 
     //Finding resorce
     query = User.find(JSON.parse(querStr));
@@ -43,16 +47,16 @@ const searchUserByQuery = async (req, res, next) => {
     //Select Fields
     if (req.query.select) {
       const fieldes = req.query.select.split(',').join(' ');
-      query = query.select(fieldes)
+      query = query.select(fieldes);
     }
     if (req.query.sort) {
       const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy)
+      query = query.sort(sortBy);
     } else {
       query = query.sort('-createdAt');
     }
 
-    //Executing 
+    //Executing
     const data = await query;
     res.status(200).json({
       success: true,
@@ -85,7 +89,9 @@ const getUser = async (req, res, next) => {
 const getUserById = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    return next(new ErrorResponse(`user not found by id of: ${req.params.id}`, 404));
+    return next(
+      new ErrorResponse(`user not found by id of: ${req.params.id}`, 404)
+    );
   }
   res.status(200).json({
     success: true,
@@ -123,7 +129,9 @@ const loginUser = async (req, res, next) => {
     //validation of elements needed for logIn
     if (!req.body.email && !req.body.username) {
       if (!req.body.password)
-        return next(new ErrorResponse(`Please provid email/username and password`, 401));
+        return next(
+          new ErrorResponse(`Please provid email/username and password`, 401)
+        );
       return next(new ErrorResponse(`Please provid an email/username`, 401));
     }
     if (!req.body.password)
@@ -131,8 +139,11 @@ const loginUser = async (req, res, next) => {
 
     // validation if user exists in db
     let user;
-    if (req.body.email) user = await User.findOne({ email: req.body.email })
-    else if (req.body.username) user = await User.findOne({ username: req.body.username })
+    if (req.body.email) {
+      user = await User.findOne({ email: req.body.email });
+    } else if (req.body.username) {
+      user = await User.findOne({ username: req.body.username });
+    }
     console.log(user);
 
     if (user) {
@@ -140,16 +151,24 @@ const loginUser = async (req, res, next) => {
       let validPass = await bcrypt.compare(req.body.password, user.password);
       if (!validPass) {
         return next(new ErrorResponse(`Password does not match`, 401));
-      }
-      else {
+      } else {
         sendTokenResponse(user, 200, res);
       }
-    }
-    else {
+    } else {
       if (req.body.email)
-        return next(new ErrorResponse(`user not found by email of: ${req.body.email}`, 404));
+        return next(
+          new ErrorResponse(
+            `user not found by email of: ${req.body.email}`,
+            404
+          )
+        );
       else if (req.body.username)
-        return next(new ErrorResponse(`user not found by username of: ${req.body.username}`, 404));
+        return next(
+          new ErrorResponse(
+            `user not found by username of: ${req.body.username}`,
+            404
+          )
+        );
     }
   } catch (err) {
     next(err);
@@ -166,7 +185,7 @@ const updateUser = async (req, res, next) => {
     res.json(data);
     res.status(200).json({
       success: true,
-      data: data,
+      data: data
     });
   } catch (err) {
     next(err);
@@ -180,13 +199,13 @@ const deleteUser = async (req, res, next) => {
   try {
     User.deleteOne({ _id: req.user.id }, (err, data) => {
       if (err) {
-        return next(new ErrorResponse(`delet failed`, 400));
+        return next(new ErrorResponse(`delete failed`, 400));
       }
       res.status(200).json({
         success: true,
-        data: data,
+        data: data
       });
-    })
+    });
   } catch (err) {
     next(err);
   }
@@ -203,7 +222,6 @@ module.exports = {
   searchUserByQuery
 };
 
-
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
@@ -211,9 +229,9 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true,
+    httpOnly: true
   };
 
   if (process.env.NODE_ENV === 'production') {
@@ -222,6 +240,6 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   res.status(statusCode).cookie('token', token, options).json({
     success: true,
-    token,
+    token
   });
 };

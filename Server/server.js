@@ -54,10 +54,23 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV;
+
+// two servers are created.
+// 1. app - listening to HTTP requests.
 const server = app.listen(
   PORT,
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
 );
+
+// Socket setup
+// var io = socket(server);
+const socker = require('./socker');
+socker(server);
+
+// 2. server - listening to WebSockets connections.
+server.listen(PORT + 1, () => {
+  console.log(`Socker listening on port ${PORT + 1}!`);
+});
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
@@ -65,17 +78,3 @@ process.on('unhandledRejection', (err, promise) => {
   // Close server & exit process
   server.close(() => process.exit(1));
 });
-
-// Socket setup
-var io = socket(server);
-
-io.on('connection', (socket) => {
-  console.log(`Connect`, socket.id);
-  socket.on('join-room', (roomId, userId) => {
-    socket.join(roomId);
-    socket.broadcast.emit('user-connected', userId);
-    socket.on('disconnect', () => {
-      socket.broadcast.emit('user-disconnected', userId)
-    })
-  })
-})
