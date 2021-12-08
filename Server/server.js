@@ -8,6 +8,11 @@ const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/err');
 const connectDB = require('./config/db');
 const socket = require('socket.io');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const cors = require('cors');
+
 // Load env vars
 dotenv.config({ path: './config/.env' });
 
@@ -20,12 +25,19 @@ connectDB();
 //Middleware 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+// Set Static folder
+app.use(express.static('public'));
 
-
-// Cookie parser when login user
+// Cookie parser when login user the token is saved in the server and send to http client
 app.use(cookieParser());
 
+//Prevent attects
+app.use(mongoSanitize());// Sanitize data for privent NoSql injection attack
+app.use(helmet());// Set security headers
+app.use(xss());// Prevent XSS attacks
+
 // Enable CORS
+app.use(cors());
 app.all('*', function (req, res, next) {
   if (!req.get('Origin')) return next();
   res.set('Access-Control-Allow-Origin', '*');

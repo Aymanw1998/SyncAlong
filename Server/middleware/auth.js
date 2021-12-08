@@ -32,3 +32,15 @@ exports.protect = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Not authorized to access this route', 401));
     }
 });
+
+
+// Grant access 
+exports.authorize = async (friendId, trainerOf) => {
+    let isAuthorize = false;
+    if (trainerOf.length > 0)
+        trainerOf.map(id => {
+            if (id.toString() == friendId)
+                isAuthorize = true;
+        });
+    return isAuthorize;
+};
