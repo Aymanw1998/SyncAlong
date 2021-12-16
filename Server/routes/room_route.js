@@ -17,6 +17,5 @@ router
     .get(getRoom)
     .put(updateRoom)
     .delete(deleteRoom)
-    .post(viewRoom); // Not work now
     
 module.exports = router;

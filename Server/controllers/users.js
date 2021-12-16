@@ -98,7 +98,7 @@ const createUser = asyncHandler(async (req, res, next) => {
   });
   req.body.avatar = avatar;
 
-  //when logedIn user creating a frined - it is an elderly frind.
+  //when logedIn user creating a friemd - it is an elderly friend.
   if (req.user) {
     req.body.role = 'elderly';
     req.body.createdBy = req.user._id;
@@ -179,6 +179,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/users/trainer
 // @access  Private
 const createFriend = asyncHandler(async (req, res, next) => {
+  
   let user = await createUser(req, res, next);
   if (user) {
     try {

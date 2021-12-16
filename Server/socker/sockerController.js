@@ -1,6 +1,7 @@
 const socketio = require('socket.io');
-const Room = require('./roomManager.js')
-export default socker = (server) => {
+const Room = require('./roomManager.js');
+
+const socker = (server) => {
   const io = new socketio.Server(server,
     {
         transports: ['websocket'], // To avoid sticky sessions when using multiple servers
@@ -17,9 +18,10 @@ export default socker = (server) => {
 //       });
 //     });
 //   });
-    io.on('connection', (socket) => {
+    io.on('connection', async(socket) => {
         const {username, roomId, password, action} = socket.handshake.query;
-        const room = new Room({io, socket, username, roomId, password, action});
+        var room = new Room(io, socket, username, roomId, password, action);
+        console.log("type: ", type(room));
         const joinedRoom = await room.init(username);
         console.info('Client Connected');
         if(joinedRoom) {
@@ -31,3 +33,5 @@ export default socker = (server) => {
     });
     return io;
 };
+
+module.exports = socker;

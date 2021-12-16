@@ -1,5 +1,5 @@
 const path = require('path');
-const { validate, room } = require('../models/room_model');
+const { validate, room } = require('../models/rooms');
 
 // @desc    Get all rooms
 // @route   GET /api/rooms/
@@ -133,7 +133,6 @@ const deleteRoom = async (req, res, next) => {
 }
 
 module.exports = {
-  viewRoom,
   getRooms,
   getRoom,
   createRoom,

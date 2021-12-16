@@ -1,4 +1,5 @@
 const path = require('path');
+const http = require('http');
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
@@ -19,22 +20,23 @@ dotenv.config({ path: './config/.env' });
 // Create app
 const app = express();
 
+// Create server
+const server = http.createServer(app);
+
 //Conect to DB
 connectDB();
 
 //Middleware 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// Set Static folder
-app.use(express.static('public'));
 
 // Cookie parser when login user the token is saved in the server and send to http client
 app.use(cookieParser());
 
 //Prevent attects
-app.use(mongoSanitize());// Sanitize data for privent NoSql injection attack
-app.use(helmet());// Set security headers
-app.use(xss());// Prevent XSS attacks
+app.use(mongoSanitize()); // Sanitize data for privent NoSql injection attack
+app.use(helmet()); // Set security headers
+app.use(xss()); // Prevent XSS attacks
 
 // Enable CORS
 app.use(cors());
@@ -53,9 +55,11 @@ if (process.env.NODE_ENV === 'development') {
 
 // Route middleware
 const users = require('./routes/users');
+const profiles = require('./routes/profiles');
 const aws_storage_route = require('./routes/aws_storage_route');
 const room_route = require('./routes/room_route');
 app.use('/api/users', users);
+app.use('/api/profiles', profiles);
 app.use('/api/files', aws_storage_route);
 app.use('/api/rooms', room_route);
 
@@ -68,10 +72,7 @@ const NODE_ENV = process.env.NODE_ENV;
 
 // two servers are created.
 // 1. app - listening to HTTP requests.
-const server = app.listen(
-  PORT,
-  console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
-);
+app.listen(PORT, console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold));
 
 // Socket setup
 // var io = socket(server);

@@ -1,17 +1,17 @@
 const socketio = require('socket.io');
 
-export default class Room {
-  constructor(options) {
+class Room {
+  constructor(io, socket, username, roomId, password, action) {
     /** @type {Server} */
-    this.io = options.io;
+    this.io = io;
 
     /** @type {Socket} */
-    this.socker = options.socket;
+    this.socker = socket;
 
-    this.username = options.username;
-    this.roomId = options.roomId;
-    this.password = options.password;
-    this.action = options.action; // [join, create]
+    this.username = username;
+    this.roomId = roomId;
+    this.password = password;
+    this.action = action; // [join, create]
   }
 
   /**
@@ -22,7 +22,7 @@ export default class Room {
    * @access  public
    * @return  {bool} Returns true if initialization is successfull, false otherwise
    */
-  async init(username) {
+   init = async(username) => {
     // Stores an array containing socket ids in 'roomId'
     const clients = await this.io.in(this.roomId).allSockets();
     if (!clients) {
@@ -73,7 +73,7 @@ export default class Room {
    *
    * @access    public
    */
-   onDisconnect() {
+   onDisconnect = () => {
     this.socker.on('disconnect', () => {
       try {
         //Disconnect
@@ -85,3 +85,6 @@ export default class Room {
     });
   }
 }
+
+
+module.exports = Room;
