@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { authorize } = require('../middleware/auth');
 
 const { deleteFriend } = require('./users');
+const { User } = require('../models/users');
 
 // @desc    Get all Profiles
 // @route   GET /api/profiles/
@@ -26,6 +27,30 @@ const getProfile = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, { profile });
 });
 
+// @desc Get All Trainers for user
+// @route GET /api/profiles/trainer/
+// @access Private with token
+const getTrainers = asyncHandler(async (req, res, next) => {
+  var friends = [];
+  const trainerOf = req.user.trainerOf;
+  console.log("trainerOf", trainerOf);
+  if (trainerOf.length > 0){
+    // trainerOf.map(async (id) => {
+    //   console.log("id", id);
+    //   let profile = await Profile.findOne({ user: id });
+    //   friends.push(profile);
+    //   console.log("friends", friends);
+    // });
+    for(var i = 0; i < trainerOf.length; i ++){
+      let id = trainerOf[i]
+      console.log("id", id);
+      let profile = await Profile.findOne({ user: id });
+      friends.push(profile);
+    }
+  }
+
+  return successResponse(req, res, { friends });
+});
 // @desc    Create new profile
 // @route   POST /api/profiles/
 // @access  Private with token
@@ -33,6 +58,7 @@ const createProfile = asyncHandler(async (req, res, next) => {
   //I have user and _id and email
   const profile = await Profile.create(req.body);
 
+  console.log('create p:', profile, profile._id);
   if (req.params.id) return profile;
 
   let data = await Profile.findOneAndUpdate(
@@ -74,18 +100,26 @@ const createProfileFriend = asyncHandler(async (req, res, next) => {
   if (!isAuthorize)
     return next(new ErrorResponse(`User is not authorize`, 403));
 
-  let profile = createProfile(req, res, next);
-  let data = await Profile.findOneAndUpdate(
-    { _id: profile._id },
-    { $addToSet: { user: req.params.id } }
-  );
-  res.status(201).json({
-    success: true,
-    data: {
-      profile: profile,
-      user: req.user
+  let profile = await createProfile(req, res, next);
+  if (profile) {
+    try {
+      let data = await Profile.findOneAndUpdate(
+        { _id: profile._id },
+        { $addToSet: { user: req.params.id } }
+      );
+      console.log('profile', profile);
+      const user = await User.findOne({_id: profile.user});
+      res.status(201).json({
+        success: true,
+        data: {
+          profile: profile,
+          user: user
+        }
+      });
+    } catch (e) {
+      next(e);
     }
-  });
+  }
 });
 
 // @desc Update elderly profile
@@ -122,10 +156,10 @@ const deleteProfileFriend = asyncHandler(async (req, res, next) => {
 //          body_Part => ['head', 'right hand', 'left hand', 'right leg', 'left leg', 'left']
 // @route
 // @access  Private (For another functions)
-const bodyPart =async (id, action, possibility, body_Part) => {
+const bodyPart = async (id, action, possibility, body_Part) => {
   var isCorrect = false;
-  BodyPart.map(p => {
-    if(p === body_Part){
+  BodyPart.map((p) => {
+    if (p === body_Part) {
       isCorrect = true;
     }
   });
@@ -138,9 +172,9 @@ const bodyPart =async (id, action, possibility, body_Part) => {
       try {
         let profile = await Profile.findOneAndUpdate(
           { _id: id },
-          { 
+          {
             $addToSet: { Dbody: body_Part },
-            $pull: {Pbody: body_Part }
+            $pull: { Pbody: body_Part }
           }
         );
         return true;
@@ -153,9 +187,9 @@ const bodyPart =async (id, action, possibility, body_Part) => {
       try {
         let profile = await Profile.findOneAndUpdate(
           { _id: id },
-          { 
+          {
             $addToSet: { Pbody: body_Part },
-            $pull: {Dbody: body_Part }          
+            $pull: { Dbody: body_Part }
           }
         );
         return true;
@@ -200,9 +234,8 @@ const addBodyPartsProfile = asyncHandler(async (req, res, next) => {
   let profile = await Profile.findOne({ user: req._id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
   const body_parts = req.body.bodyPart; // Array
-  if(body_parts.length > 0)
-  {
-    body_parts.map(async(part) => {
+  if (body_parts.length > 0) {
+    body_parts.map(async (part) => {
       let b = await bodyPart(profile._id, 'add', possibility, part);
     });
   }
@@ -217,9 +250,8 @@ const removeBodyPartsProfile = asyncHandler(async (req, res, next) => {
   let profile = await Profile.findOne({ user: req._id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
   const body_parts = req.body.bodyPart; // Araddray
-  if(body_parts.length > 0)
-  {
-    body_parts.map(async(part) => {
+  if (body_parts.length > 0) {
+    body_parts.map(async (part) => {
       let b = await bodyPart(profile._id, 'remove', possibility, part);
     });
   }
@@ -238,9 +270,8 @@ const addBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
   let profile = await Profile.findOne({ _id: req.params.id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
   const body_parts = req.body.bodyPart; // Array
-  if(body_parts.length > 0)
-  {
-    body_parts.map(async(part) => {
+  if (body_parts.length > 0) {
+    body_parts.map(async (part) => {
       let b = await bodyPart(profile._id, 'add', possibility, part);
     });
   }
@@ -259,9 +290,8 @@ const removeBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
   let profile = await Profile.findOne({ _id: req.params.id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
   const body_parts = req.body.bodyPart; // Araddray
-  if(body_parts.length > 0)
-  {
-    body_parts.map(async(part) => {
+  if (body_parts.length > 0) {
+    body_parts.map(async (part) => {
       let b = await bodyPart(profile._id, 'remove', possibility, part);
     });
   }
@@ -275,6 +305,8 @@ module.exports = {
   createProfile,
   updateProfile,
   deleteProfile,
+
+  getTrainers,
   createProfileFriend,
   updateProfileFriend,
   deleteProfileFriend,

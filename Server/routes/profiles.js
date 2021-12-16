@@ -7,6 +7,8 @@ const {
   createProfile,
   updateProfile,
   deleteProfile,
+  
+  getTrainers,
   createProfileFriend,
   updateProfileFriend,
   deleteProfileFriend,
@@ -27,6 +29,7 @@ router
       .put(protect, updateProfile).
       delete(protect, deleteProfile);
 
+router.route('/trainer').get(protect, getTrainers);
 router
       .route('/trainer/:id')
       .post(protect, createProfileFriend)
