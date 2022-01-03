@@ -3,22 +3,27 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const meetingSchema = new mongoose.Schema({
-  id: {
+  name: {
     type: String,
   },
   host: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'users',
   },
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'users',
   }],
   date: {
       type: Date,
+      default: Date.now
   },
-  urlRoom: {
-    type: URL,
+  status: {
+    type: Boolean, 
+    default: false
+  },
+  urlRoom:{
+    type: String,
   }
 });
 

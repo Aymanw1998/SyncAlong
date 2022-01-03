@@ -11,6 +11,8 @@ const { authorize } = require('../middleware/auth');
 const { deleteFriend } = require('./users');
 const { User } = require('../models/users');
 
+const {getMeetings} = require('./meetings')
+
 // @desc    Get all Profiles
 // @route   GET /api/profiles/
 // @access  Public
@@ -33,17 +35,17 @@ const getProfile = asyncHandler(async (req, res, next) => {
 const getTrainers = asyncHandler(async (req, res, next) => {
   var friends = [];
   const trainerOf = req.user.trainerOf;
-  console.log("trainerOf", trainerOf);
-  if (trainerOf.length > 0){
+  console.log('trainerOf', trainerOf);
+  if (trainerOf.length > 0) {
     // trainerOf.map(async (id) => {
     //   console.log("id", id);
     //   let profile = await Profile.findOne({ user: id });
     //   friends.push(profile);
     //   console.log("friends", friends);
     // });
-    for(var i = 0; i < trainerOf.length; i ++){
-      let id = trainerOf[i]
-      console.log("id", id);
+    for (var i = 0; i < trainerOf.length; i++) {
+      let id = trainerOf[i];
+      console.log('id', id);
       let profile = await Profile.findOne({ user: id });
       friends.push(profile);
     }
@@ -83,6 +85,9 @@ const updateProfile = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, { data });
 });
 
+// @desc    Delete profile
+// @route   DELETE /api/profiles/
+// @access  Private with token
 const deleteProfile = asyncHandler(async (req, res, next) => {
   Profile.deleteOne({ user: req.user.id }, (err, data) => {
     if (err) {
@@ -108,7 +113,7 @@ const createProfileFriend = asyncHandler(async (req, res, next) => {
         { $addToSet: { user: req.params.id } }
       );
       console.log('profile', profile);
-      const user = await User.findOne({_id: profile.user});
+      const user = await User.findOne({ _id: profile.user });
       res.status(201).json({
         success: true,
         data: {
@@ -151,12 +156,13 @@ const deleteProfileFriend = asyncHandler(async (req, res, next) => {
 
 // @desc    ADD/Remove body parts
 // @desc    id => _id,
-//          action => ["add" OR "remove"],
+//          Activity => ["add" OR "remove"],
 //          possibility => ["Prohibited" OR "Desirable"],
+//          p => ["Upper" OR "Bottom"]
 //          body_Part => ['head', 'right hand', 'left hand', 'right leg', 'left leg', 'left']
 // @route
 // @access  Private (For another functions)
-const bodyPart = async (id, action, possibility, body_Part) => {
+const bodyPart = async (id, Activity, possibility, p, body_Part) => {
   var isCorrect = false;
   BodyPart.map((p) => {
     if (p === body_Part) {
@@ -167,14 +173,34 @@ const bodyPart = async (id, action, possibility, body_Part) => {
   if (!isCorrect) {
     return false;
   }
-  if (action === 'add') {
-    if (possibility === 'Desirable' || possibility === 'desirable') {
+  if (Activity === 'add') {
+    if (
+      (possibility === 'Desirable' || possibility === 'desirable') &&
+      (p === 'Upper' || p === 'upper')
+    ) {
       try {
         let profile = await Profile.findOneAndUpdate(
           { _id: id },
           {
-            $addToSet: { Dbody: body_Part },
-            $pull: { Pbody: body_Part }
+            $addToSet: { DesirableBodyUpper: body_Part },
+            $pull: { ProhibitedBodybodyUpper: body_Part }
+          }
+        );
+        return true;
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    } else if (
+      (possibility === 'Desirable' || possibility === 'desirable') &&
+      (p === 'Bottom' || p === 'Bottom')
+    ) {
+      try {
+        let profile = await Profile.findOneAndUpdate(
+          { _id: id },
+          {
+            $addToSet: { DesirableBodyBottom: body_Part },
+            $pull: { ProhibitedBodybodyBottom: body_Part }
           }
         );
         return true;
@@ -184,27 +210,61 @@ const bodyPart = async (id, action, possibility, body_Part) => {
       }
     } else {
       // possibility === "prohibited"
-      try {
-        let profile = await Profile.findOneAndUpdate(
-          { _id: id },
-          {
-            $addToSet: { Pbody: body_Part },
-            $pull: { Dbody: body_Part }
-          }
-        );
-        return true;
-      } catch (e) {
-        console.log(e);
-        return false;
+      if (p === 'Upper' || p === 'upper') {
+        try {
+          let profile = await Profile.findOneAndUpdate(
+            { _id: id },
+            {
+              $addToSet: { ProhibitedBodyUpper: body_Part },
+              $pull: { DesirableBodyUpper: body_Part }
+            }
+          );
+          return true;
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
+      } else {
+        //p === 'Bootom' || p === 'bottom'
+        try {
+          let profile = await Profile.findOneAndUpdate(
+            { _id: id },
+            {
+              $addToSet: { ProhibitedBody: body_Part },
+              $pull: { DesirableBody: body_Part }
+            }
+          );
+          return true;
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
       }
     }
   } else {
-    // action === "remove"
-    if (possibility === 'Desirable' || possibility === 'desirable') {
+    // Activity === "remove"
+    if (
+      (possibility === 'Desirable' || possibility === 'desirable') &&
+      (p === 'Upper' || p === 'upper')
+    ) {
       try {
         let profile = await Profile.findOneAndUpdate(
           { _id: id },
-          { $pull: { Dbody: body_Part } }
+          { $pull: { DesirableBodyUpper: body_Part } }
+        );
+        return true;
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    } else if (
+      (possibility === 'Desirable' || possibility === 'desirable') &&
+      (p === 'Bottom' || p === 'bottom')
+    ) {
+      try {
+        let profile = await Profile.findOneAndUpdate(
+          { _id: id },
+          { $pull: { DesirableBodyBottom: body_Part } }
         );
         return true;
       } catch (e) {
@@ -213,15 +273,28 @@ const bodyPart = async (id, action, possibility, body_Part) => {
       }
     } else {
       // possibility === "prohibited"
-      try {
-        let profile = await Profile.findOneAndUpdate(
-          { _id: id },
-          { $pull: { Pbody: body_Part } }
-        );
-        return true;
-      } catch (e) {
-        console.log(e);
-        return false;
+      if (p === 'Upper' || p === 'upper') {
+        try {
+          let profile = await Profile.findOneAndUpdate(
+            { _id: id },
+            { $pull: { ProhibitedBodyUpper: body_Part } }
+          );
+          return true;
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
+      } else {
+        try {
+          let profile = await Profile.findOneAndUpdate(
+            { _id: id },
+            { $pull: { ProhibitedBodyBottom: body_Part } }
+          );
+          return true;
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
       }
     }
   }
@@ -299,6 +372,44 @@ const removeBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, { profile });
 });
 
+// @decs    get all meetings for profile
+// @router  GET /api/profiles/scheduled/
+// @access  Private with token
+const scheduledMeetings = asyncHandler(async(req, res, next)=> {
+  let meetings = [];
+  
+  await getMeetings(req, res, next)
+  .then(data => {
+    meetings = data.meetings;
+    return successResponse(req, res, { meetings });
+  })
+  .catch(err => {
+    console.error(err);
+    return next(new ErrorResponse(err, 401));
+  });
+});
+
+// @decs    get meeting for profile
+// @router  GET /api/profiles/scheduled/:id
+// @access  Private with token
+const scheduledMeeting = asyncHandler(async(req, res, next)=> {
+  if(!req.params.id){
+    return next(new ErrorResponse('missing id param', 401));
+  }
+
+  await getMeetings(req, res, next)
+  .then(data => {
+    let meeting = data.meetings.find(meet => meet._id === req.params.id);
+    if(!meeting)
+      return next(new ErrorResponse(`don't have meeting with id: ${req.params.id}`, 401));
+    return successResponse(req, res, { meeting });
+  })
+  .catch(err => {
+    console.error(err);
+    return next(new ErrorResponse(err, 401));
+  });
+});
+
 module.exports = {
   getProfiles,
   getProfile,
@@ -315,5 +426,8 @@ module.exports = {
   addBodyPartsProfileFriend,
 
   removeBodyPartsProfile,
-  removeBodyPartsProfileFriend
+  removeBodyPartsProfileFriend,
+
+  scheduledMeetings,
+  scheduledMeeting
 };

@@ -7,7 +7,7 @@ const BodyPart = ['head', 'right hand', 'left hand', 'right leg', 'left leg', 'l
 const profileSchema = new mongoose.Schema({
   user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
+      ref: 'users',
   },
   gender: {
     type: String,
@@ -28,16 +28,24 @@ const profileSchema = new mongoose.Schema({
   updateAt: {
     type: Date, default: Date.now
   },
-  Pbody: [{ // Prohibited areas in the body
+  ProhibitedBodyUpper: [{ // Prohibited areas in the body
     type: String,
     enum: BodyPart,
   }],
-  Dbody: [{ // Desirable areas in the body
+  DesirableBodyUpper: [{ // Desirable areas in the body
     type: String,
     enum: BodyPart,
   }],
+  ProhibitedBodyBottom: [{ // Prohibited areas in the body
+    type: String,
+    enum: BodyPart,
+  }],
+  DesirableBodyBottom: [{ // Desirable areas in the body
+    type: String,
+    enum: BodyPart,
+  }],
+  //פעילות רצויה באזורים בגוף
 });
-
-
+//רוצה להראות ל?
 const Profile = mongoose.model('profiles', profileSchema);
 module.exports = { Profile, BodyPart };

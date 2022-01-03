@@ -9,7 +9,8 @@ const S3 = {
   async get(fileName, bucket) {
     const params = {
       Bucket: bucket,
-      Key: fileName
+      Key: fileName,
+      acl: 'public-read'
     };
 
     let data = await s3Client.getObject(params).promise();
@@ -32,21 +33,26 @@ const S3 = {
     console.log('params', params);
 
     const newData = await s3Client.putObject(params).promise();
-
     if (!newData) {
       throw Error('there was an error writing the file');
     }
-
     return newData;
   },
 
   async getSignedURL(bucket, fileName, expriySeconds) {
     return s3Client.getSignedUrl('getObject', {
-        Bucket: bucket,
-        Key: fileName,
-        Expires: expriySeconds,
+      Bucket: bucket,
+      Key: fileName,
+      Expires: expriySeconds
     });
-}
+  },
+
+  async delete(bucket, filepath) {
+    return s3Client.deleteObject({
+      Bucket: bucket,
+      Key: filepath
+    });
+  }
 };
 
 module.exports = S3;

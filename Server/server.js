@@ -26,11 +26,12 @@ const server = http.createServer(app);
 //Conect to DB
 connectDB();
 
-//Middleware 
+//Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Cookie parser when login user the token is saved in the server and send to http client
+//
 app.use(cookieParser());
 
 //Prevent attects
@@ -43,8 +44,11 @@ app.use(cors());
 app.all('*', function (req, res, next) {
   if (!req.get('Origin')) return next();
   res.set('Access-Control-Allow-Origin', '*');
-  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-  res.set('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+  res.set(
+    'Access-Control-Allow-Headers',
+    'X-Requested-With,Content-Type,authorization'
+  );
   next();
 });
 
@@ -56,12 +60,30 @@ if (process.env.NODE_ENV === 'development') {
 // Route middleware
 const users = require('./routes/users');
 const profiles = require('./routes/profiles');
-const aws_storage_route = require('./routes/aws_storage_route');
-const room_route = require('./routes/room_route');
+const aws_storage_route = require('./routes/files');
+const room_route = require('./routes/rooms');
+const activitys = require('./routes/activitys');
+const activityUserFeedbacks = require('./routes/activity_user_feedbacks');
+const feedbacks = require('./routes/feedbacks');
+const meetings =require('./routes/meetings');
+const poses = require('./routes/poses');
+const syncScores = require('./routes/sync-scores');
+
 app.use('/api/users', users);
 app.use('/api/profiles', profiles);
 app.use('/api/files', aws_storage_route);
 app.use('/api/rooms', room_route);
+app.use('/api/activitys', activitys);
+app.use('/api/activityUserFeedbacks', activityUserFeedbacks);
+app.use('/api/feedbacks', feedbacks);
+app.use('/api/meetings', meetings);
+app.use('/api/poses', poses);
+app.use('/api/syncscores', syncScores);
+
+
+
+const tests = require('./routes/tests');
+app.use('/api/tests', tests);
 
 //must be after routes call
 //for catch 500-400 errors
@@ -72,7 +94,10 @@ const NODE_ENV = process.env.NODE_ENV;
 
 // two servers are created.
 // 1. app - listening to HTTP requests.
-app.listen(PORT, console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold));
+app.listen(
+  PORT,
+  console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
+);
 
 // Socket setup
 // var io = socket(server);

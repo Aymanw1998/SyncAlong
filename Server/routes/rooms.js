@@ -1,10 +1,12 @@
 const express = require('express');
 
-const {viewRoom,
+const {
     getRooms,
     getRoom,
     createRoom,
-    updateRoom, deleteRoom} = require('../controllers/room_controller')
+    updateRoom, 
+    deleteRoom
+} = require('../controllers/rooms')
 const router = express.Router();
 
 router
@@ -13,7 +15,7 @@ router
     .post(createRoom);
 
 router
-    .route('/:id')
+    .route('/:name')
     .get(getRoom)
     .put(updateRoom)
     .delete(deleteRoom)

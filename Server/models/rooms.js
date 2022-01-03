@@ -3,9 +3,6 @@ const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 
 const roomSchema = new mongoose.Schema({
-  id: {
-    type: String,
-  },
   name: {
     type: String,
     lowercase: true,
@@ -13,20 +10,17 @@ const roomSchema = new mongoose.Schema({
     required: [true, "can't be blank"],
     index: true
   },
-  url: {
-    type: String,
-    lowercase: true
+  meeting: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'meeting'
   },
-  peer1Id: {
-    type: String,
-    required: true,
-    Length: 9
-  },
-  peer2Id: {
-    type: String,
-    required: true,
-    Length: 9
-  }
+  sockets: [{
+    type: String
+  }],
+  listPoses:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'poses'
+  }]
 });
 
 const Room = mongoose.model('rooms', roomSchema);

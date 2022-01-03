@@ -17,7 +17,10 @@ const {
   addBodyPartsProfileFriend,
 
   removeBodyPartsProfile,
-  removeBodyPartsProfileFriend
+  removeBodyPartsProfileFriend,
+
+  scheduledMeetings,
+  scheduledMeeting
 } = require('../controllers/profiles');
 const router = express.Router();
 
@@ -29,7 +32,7 @@ router
       .put(protect, updateProfile).
       delete(protect, deleteProfile);
 
-router.route('/trainer').get(protect, getTrainers);
+router.route('/trainer').get(protect, getTrainers); //הצגה של 
 router
       .route('/trainer/:id')
       .post(protect, createProfileFriend)
@@ -46,4 +49,6 @@ router
       .post(protect, addBodyPartsProfileFriend)
       .delete(protect, removeBodyPartsProfileFriend);
 
+router.route('/scheduled').get(protect, scheduledMeetings);
+router.route('/scheduled/:id').get(protect, scheduledMeeting);
 module.exports = router;
