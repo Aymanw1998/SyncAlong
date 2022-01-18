@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../../middleware/auth');
 
 const {
   getActivityUserFeedbacks,
@@ -7,7 +7,7 @@ const {
   updateActivityUserFeedback,
   createActivityUserFeedback,
   deleteActivityUserFeedback
-} = require('../controllers/activity_user_feedbacks');
+} = require('../../controllers/activity_user_feedbacks');
 const router = express.Router();
 
 router.route('/').get(getActivityUserFeedbacks).post(createActivityUserFeedback);

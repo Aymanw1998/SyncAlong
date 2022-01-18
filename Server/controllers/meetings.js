@@ -12,10 +12,10 @@ const getMeetings = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get single meeting
-// @route   GET /api/meetings/:name
+// @route   GET /api/meetings/:id
 // @access  Private with token
 const getMeeting = asyncHandler(async (req, res, next) => {
-  const meeting = await Meeting.findOne({ name: req.params.name });
+  const meeting = await Meeting.findOne({ id: req.params.id });
   return successResponse(req, res, { meeting });
 });
 

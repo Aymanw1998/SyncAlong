@@ -1,13 +1,13 @@
 //File to video
 const mongoose = require('mongoose');
 
-const fileSchema = new mongoose.Schema({
+const recordingSchema = new mongoose.Schema({
   name: {
     type: String
   },
-  room_id: {
+  meeting_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'rooms',
+    ref: 'meetings',
   },
   array_sync_time:[{
     type: Date, 
@@ -17,5 +17,5 @@ const fileSchema = new mongoose.Schema({
   }
 });
 
-const File = mongoose.model('files', fileSchema);
-module.exports = { File };
+const Recording = mongoose.model('recordings', recordingSchema);
+module.exports = { Recording };

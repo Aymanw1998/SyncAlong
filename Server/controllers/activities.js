@@ -1,19 +1,19 @@
 const asyncHandler = require('../middleware/async');
-const { Activity } = require('../models/activitys');
-const { getFile } = require('./files');
+const { Activity } = require('../models/activities');
+const { getRecording } = require('./recordings');
 const ErrorResponse = require('../utils/errorResponse');
 const { successResponse } = require('../utils/successResponse');
 
-// @desc    Get all Activitys
-// @route   GET /api/activitys/
+// @desc    Get all Activities
+// @route   GET /api/activities/
 // @access  Public
-const getActivitys = asyncHandler(async (req, res, next) => {
-  const activitys = await Activity.find();
-  return successResponse(req, res, { activitys });
+const getActivities = asyncHandler(async (req, res, next) => {
+  const activities = await Activity.find();
+  return successResponse(req, res, { activities });
 });
 
 // @desc    Get single Activity
-// @route   GET /api/activitys/:name
+// @route   GET /api/activities/:name
 // @access  Public
 const getActivity = asyncHandler(async (req, res, next) => {
   const activity = await Activity.findOne({ name: req.params.name });
@@ -26,10 +26,10 @@ const getActivity = asyncHandler(async (req, res, next) => {
 const createActivity = asyncHandler(async (req, res, next) => {
   //body:
   //      name
-  //      url for file
+  //      url for Recording
   //      BasicBodyParts: Array
 
-  const file = await getFile(req, res, next);
+  const recording = await getRecording(req, res, next);
   let body = {
     name: req.body.name,
     file: file._id,
@@ -41,7 +41,7 @@ const createActivity = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, { activity: activity });
 });
 
-// @desc    Update Activitys
+// @desc    Update activities
 // @route   PUT /api/activity/:name
 // @access  Private with token
 const updateActivity = asyncHandler(async (req, res, next) => {
@@ -129,7 +129,7 @@ const bodyPart = asyncHandler(async (id, activity, body_Part) => {
 });
 
 // @decs    Add basic body parts for Activity
-// @router  POST /api/activitys/:name/body
+// @router  POST /api/activities/:name/body
 // @access  Private with token
 const addBasicBodyPartsActivity = asyncHandler(async (req, res, next) => {
   let activity = await Activity.findOne({ name: req.params.name });
@@ -144,7 +144,7 @@ const addBasicBodyPartsActivity = asyncHandler(async (req, res, next) => {
 });
 
 // @decs    remove basic body parts for profile
-// @router  DELET /api/activitys/body
+// @router  DELET /api/activities/body
 // @access  Private with token
 const removeBasicBodyPartsActivity = asyncHandler(async (req, res, next) => {
   let activity = await Activity.findOne({ name: req.params.name });
@@ -179,7 +179,7 @@ const changeActivity = asyncHandler(async (req, res, next) =>{
 
 
 module.exports = {
-  getActivitys,
+  getActivities,
   getActivity,
   updateActivity,
   createActivity,

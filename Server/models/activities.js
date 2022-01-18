@@ -6,19 +6,23 @@ const activitySchema = new mongoose.Schema({
   name: {
     type: String
   },
-  file: { //IMAGE OR VEDIO
+  video_id: { //VEDIO
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'files'
+    ref: 'recordings'
   },
   BasicBodyParts: [{
     type: String,
     enum: BodyPart,
   }],
+  feedback_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'feedbacks'
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-const Activity = mongoose.model('activitys', activitySchema);
+const Activity = mongoose.model('activities', activitySchema);
 module.exports = { Activity };

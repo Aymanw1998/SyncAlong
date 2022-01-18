@@ -3,9 +3,9 @@ const router = express.Router();
 const multer = require('multer');
 
 const {
-  uploadFile,
-  deleteFile
-} = require('../controllers/files');
+  uploadRecording,
+  deleteRecording
+} = require('../controllers/recordings');
 
 const storage = multer.memoryStorage({
   acl: 'public-read',
@@ -20,6 +20,6 @@ const upload = multer({ storage }).single('file_data');
 // .get(upload,uploadfunction)
 
 // sent file with name "file_data" to uploadfunction
-router.route('/').post(upload, uploadFile).delete(deleteFile);
+router.route('/').post(upload, uploadRecording).delete(deleteRecording);
 
 module.exports = router;

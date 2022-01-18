@@ -18,62 +18,36 @@ const {getMeetings} = require('./meetings')
 // @access  Public
 const getProfiles = asyncHandler(async (req, res, next) => {
   const profiles = await Profile.find();
-  return successResponse(req, res, { profiles });
+  return successResponse(req, res, { profiles: profiles });
 });
 
 // @desc    Get single profile
-// @route   GET /api/profile/loged
+// @route   GET /api/profiles/
 // @access  Private with token
 const getProfile = asyncHandler(async (req, res, next) => {
-  const profile = await Profile.findOne({ user: req._id });
-  return successResponse(req, res, { profile });
-});
-
-// @desc Get All Trainers for user
-// @route GET /api/profiles/trainer/
-// @access Private with token
-const getTrainers = asyncHandler(async (req, res, next) => {
-  var friends = [];
-  const trainerOf = req.user.trainerOf;
-  console.log('trainerOf', trainerOf);
-  if (trainerOf.length > 0) {
-    // trainerOf.map(async (id) => {
-    //   console.log("id", id);
-    //   let profile = await Profile.findOne({ user: id });
-    //   friends.push(profile);
-    //   console.log("friends", friends);
-    // });
-    for (var i = 0; i < trainerOf.length; i++) {
-      let id = trainerOf[i];
-      console.log('id', id);
-      let profile = await Profile.findOne({ user: id });
-      friends.push(profile);
-    }
+  if(!req.user.profile_id){
+    return next(new ErrorResponse('you do not have profile, create profile for you befor that', 401));
   }
-
-  return successResponse(req, res, { friends });
+  const profile = await Profile.findById(req.user.profile_id);
+  return successResponse(req, res, profile);
 });
+
 // @desc    Create new profile
 // @route   POST /api/profiles/
 // @access  Private with token
 const createProfile = asyncHandler(async (req, res, next) => {
-  //I have user and _id and email
-  const profile = await Profile.create(req.body);
+  if(req.user.profile_id && !req.params.id){
+    return next(new ErrorResponse('you have profile, you must not create another', 401));
+  }
+  let profile = await Profile.create(req.body);
 
-  console.log('create p:', profile, profile._id);
   if (req.params.id) return profile;
 
-  let data = await Profile.findOneAndUpdate(
-    { _id: profile._id },
-    { $addToSet: { user: req.user._id } }
-  );
-  res.status(201).json({
-    success: true,
-    data: {
-      profile: profile,
-      user: req.user
-    }
+  let data = await User.findByIdAndUpdate(req.user._id, {
+    profile_id: profile._id,
   });
+  profile = await Profile.findById(profile._id)
+  successResponse(req, res,profile);
 });
 
 // @desc    Update profile
@@ -81,8 +55,8 @@ const createProfile = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const updateProfile = asyncHandler(async (req, res, next) => {
   req.body.updateAt = Date.now();
-  let data = await Profile.updateOne({ user: req.user.id }, req.body);
-  return successResponse(req, res, { data });
+  let data = await Profile.updateOne({ _id: req.user.profile_id }, req.body);
+  return successResponse(req, res, data);
 });
 
 // @desc    Delete profile
@@ -98,29 +72,40 @@ const deleteProfile = asyncHandler(async (req, res, next) => {
 });
 
 // @desc Create elderly profile
-// @route POST /api/profiles/trainer/:id
+// @route POST /api/profiles/trainer/:id (id user)
 // @access Private with token
 const createProfileFriend = asyncHandler(async (req, res, next) => {
-  let isAuthorize = await authorize(req.params.id, req.user.trainerOf);
-  if (!isAuthorize)
-    return next(new ErrorResponse(`User is not authorize`, 403));
-
-  let profile = await createProfile(req, res, next);
-  if (profile) {
+  if(req.user.role === 'elderly'){
+    return next(
+      new ErrorResponse(`Cannot create friend becuse you are elderly`, 400)
+    );
+  }
+  let testExistUser = await User.findById(req.params.id);
+  if(!testExistUser){
+    return next(
+      new ErrorResponse(`The user with id: ${req.params.id} does not exist`, 400)
+    );
+  }
+  let profileFriend = await createProfile(req, res, next);
+  if (profileFriend) {
     try {
-      let data = await Profile.findOneAndUpdate(
-        { _id: profile._id },
-        { $addToSet: { user: req.params.id } }
+      //connection between the profile and his user
+      let data = await User.findByIdAndUpdate(
+        req.params.id,
+        {profile_id: profileFriend._id});
+      // connection between add traineeOf on profileElderly
+      data = await Profile.findByIdAndUpdate(
+        profileFriend._id,
+        { traineeOf: req.user._id }
       );
-      console.log('profile', profile);
-      const user = await User.findOne({ _id: profile.user });
-      res.status(201).json({
-        success: true,
-        data: {
-          profile: profile,
-          user: user
-        }
-      });
+      // connection between add trainerOf on profileTrainer
+      data = await Profile.findByIdAndUpdate(
+        req.user.profile_id,
+        {$addToSet: { trainerOf: req.params._id}}
+      );
+
+      profileFriend = await Profile.findById(profileFriend._id);
+      successResponse(req, res,profileFriend);
     } catch (e) {
       next(e);
     }
@@ -128,15 +113,23 @@ const createProfileFriend = asyncHandler(async (req, res, next) => {
 });
 
 // @desc Update elderly profile
-// @route PUT /api/profiles/trainer/:id
+// @route PUT /api/profiles/trainer/:id (id user)
 // @access Private with token
 const updateProfileFriend = asyncHandler(async (req, res, next) => {
-  let isAuthorize = await authorize(req.params.id, req.user.trainerOf);
+  if(req.user.role === 'elderly'){
+    return next(
+      new ErrorResponse(`Cannot update friend becuse you are elderly`, 400)
+    );
+  }
+  const myProfile = await Profile.findById(req.user.profile_id);
+  const trainerOf = myProfile.trainerOf;
+  let isAuthorize = await authorize(req.params.id, trainerOf);
   if (!isAuthorize)
     return next(new ErrorResponse(`User is not authorize`, 403));
 
   req.body.updateAt = Date.now();
-  let data = await Profile.updateOne({ _id: req.params.id }, req.body);
+  const friendUser = await User.findById(req.params.id); 
+  let data = await Profile.findByIdUpdate(friendUser.profile_id, req.body);
   return successResponse(req, res, { data });
 });
 
@@ -304,72 +297,90 @@ const bodyPart = async (id, Activity, possibility, p, body_Part) => {
 // @router  POST /api/profiles/body
 // @access  Private with token
 const addBodyPartsProfile = asyncHandler(async (req, res, next) => {
-  let profile = await Profile.findOne({ user: req._id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
+  const p = req.body.p; // "Upper" OR "Bottom"
   const body_parts = req.body.bodyPart; // Array
   if (body_parts.length > 0) {
     body_parts.map(async (part) => {
-      let b = await bodyPart(profile._id, 'add', possibility, part);
+      let b = await bodyPart(req.user.profile_id, 'add', possibility, p ,part);
     });
   }
-  profile = await Profile.findOne({ user: req._id });
-  return successResponse(req, res, { profile });
+  const profile = await Profile.findById(req.user.profile_id);
+  return successResponse(req, res, profile);
 });
 
 // @decs    remove body parts for profile
 // @router  DELET /api/profiles/body
 // @access  Private with token
 const removeBodyPartsProfile = asyncHandler(async (req, res, next) => {
-  let profile = await Profile.findOne({ user: req._id });
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
+  const p = req.body.p; // "Upper" OR "Bottom"
   const body_parts = req.body.bodyPart; // Araddray
   if (body_parts.length > 0) {
     body_parts.map(async (part) => {
-      let b = await bodyPart(profile._id, 'remove', possibility, part);
+      let b = await bodyPart(req.user.profile_id, 'remove', p, possibility, part);
     });
   }
-  profile = await Profile.findOne({ user: req._id });
-  return successResponse(req, res, { profile });
+  const profile = await Profile.findById(req.user.profile_id);
+  return successResponse(req, res, profile);
 });
 
 // @decs    Add body parts for elderly profile
 // @router  POST /api/profiles/body/trainer/:id
 // @access  Private with token
 const addBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
-  let isAuthorize = await authorize(req.params.id, req.user.trainerOf);
+  if(req.user.role === 'elderly'){
+    return next(
+      new ErrorResponse(`Cannot add/delete body parts friend becuse you are elderly`, 400)
+    );
+  }
+  const myProfile = await Profile.findById(req.user.profile_id);
+  const trainerOf = myProfile.trainerOf;
+  let isAuthorize = await authorize(req.params.id, trainerOf);
   if (!isAuthorize)
     return next(new ErrorResponse(`User is not authorize`, 403));
 
-  let profile = await Profile.findOne({ _id: req.params.id });
+  
+  let userFriend = await User.findById(req.params.id);
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
+  const p = req.body.p; // "Upper" OR "Bottom"
   const body_parts = req.body.bodyPart; // Array
   if (body_parts.length > 0) {
     body_parts.map(async (part) => {
-      let b = await bodyPart(profile._id, 'add', possibility, part);
+      let b = await bodyPart(userFriend.profile_id, 'add', possibility, p, part);
     });
   }
-  profile = await Profile.findOne({ _id: req.params.id });
-  return successResponse(req, res, { profile });
+  const profile = await Profile.findById(userFriend.profile_id);
+  return successResponse(req, res, profile);
 });
 
 // @decs    remove body parts for elderly profile
 // @router  DELET /api/profiles/body/trainer/:id
 // @access  Private with token
 const removeBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
-  let isAuthorize = await authorize(req.params.id, req.user.trainerOf);
+  if(req.user.role === 'elderly'){
+    return next(
+      new ErrorResponse(`Cannot add/delete body parts friend becuse you are elderly`, 400)
+    );
+  }
+  const myProfile = await Profile.findById(req.user.profile_id);
+  const trainerOf = myProfile.trainerOf;
+  let isAuthorize = await authorize(req.params.id, trainerOf);
   if (!isAuthorize)
     return next(new ErrorResponse(`User is not authorize`, 403));
 
-  let profile = await Profile.findOne({ _id: req.params.id });
+  
+  let userFriend = await User.findById(req.params.id);
   const possibility = req.body.possibility; // "Prohibited" OR "Desirable"
-  const body_parts = req.body.bodyPart; // Araddray
+  const p = req.body.p; // "Upper" OR "Bottom"
+  const body_parts = req.body.bodyPart; // Array
   if (body_parts.length > 0) {
     body_parts.map(async (part) => {
-      let b = await bodyPart(profile._id, 'remove', possibility, part);
+      let b = await bodyPart(userFriend.profile_id, 'remove', possibility, p, part);
     });
   }
-  profile = await Profile.findOne({ _id: req.params.id });
-  return successResponse(req, res, { profile });
+  const profile = await Profile.findById(userFriend.profile_id);
+  return successResponse(req, res, profile);
 });
 
 // @decs    get all meetings for profile
@@ -377,17 +388,23 @@ const removeBodyPartsProfileFriend = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const scheduledMeetings = asyncHandler(async(req, res, next)=> {
   let meetings = [];
-  
-  await getMeetings(req, res, next)
-  .then(data => {
-    meetings = data.meetings;
-    return successResponse(req, res, { meetings });
-  })
-  .catch(err => {
-    console.error(err);
-    return next(new ErrorResponse(err, 401));
-  });
-});
+  const myProfile = await Profile.findById(req.user.profile_id);
+  if(myProfile){
+    const future_meeting_id = myProfile.future_meeting_id;
+    const performed_meeting_id = myProfile.performed_meeting_id;
+
+    for(let i=0; i<future_meeting_id.length; i++){
+      req.params.id = future_meeting_id[i];
+      const meeting = await getMeetings(req, res, next);
+      meetings.push(meeting);
+    }
+    for(let i=0; i<future_meeting_id.length; i++){
+      req.params.id = future_meeting_id[i];
+      const meeting = await getMeetings(req, res, next);
+      meetings.push(meeting);
+    }
+    successResponse(req, res, {meetings});
+}});
 
 // @decs    get meeting for profile
 // @router  GET /api/profiles/scheduled/:id
@@ -399,7 +416,7 @@ const scheduledMeeting = asyncHandler(async(req, res, next)=> {
 
   await getMeetings(req, res, next)
   .then(data => {
-    let meeting = data.meetings.find(meet => meet._id === req.params.id);
+    let meeting = data.meetings.filter(meet => meet._id === req.params.id);
     if(!meeting)
       return next(new ErrorResponse(`don't have meeting with id: ${req.params.id}`, 401));
     return successResponse(req, res, { meeting });
@@ -410,14 +427,13 @@ const scheduledMeeting = asyncHandler(async(req, res, next)=> {
   });
 });
 
+
 module.exports = {
   getProfiles,
   getProfile,
   createProfile,
   updateProfile,
   deleteProfile,
-
-  getTrainers,
   createProfileFriend,
   updateProfileFriend,
   deleteProfileFriend,

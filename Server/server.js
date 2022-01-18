@@ -20,9 +20,6 @@ dotenv.config({ path: './config/.env' });
 // Create app
 const app = express();
 
-// Create server
-const server = http.createServer(app);
-
 //Conect to DB
 connectDB();
 
@@ -60,10 +57,10 @@ if (process.env.NODE_ENV === 'development') {
 // Route middleware
 const users = require('./routes/users');
 const profiles = require('./routes/profiles');
-const aws_storage_route = require('./routes/files');
-const room_route = require('./routes/rooms');
-const activitys = require('./routes/activitys');
-const activityUserFeedbacks = require('./routes/activity_user_feedbacks');
+const recordings = require('./routes/recordings');
+// const room_route = require('./routes/rooms');
+const activities = require('./routes/activities');
+// const activityUserFeedbacks = require('./routes/activity_user_feedbacks');
 const feedbacks = require('./routes/feedbacks');
 const meetings =require('./routes/meetings');
 const poses = require('./routes/poses');
@@ -71,19 +68,19 @@ const syncScores = require('./routes/sync-scores');
 
 app.use('/api/users', users);
 app.use('/api/profiles', profiles);
-app.use('/api/files', aws_storage_route);
-app.use('/api/rooms', room_route);
-app.use('/api/activitys', activitys);
-app.use('/api/activityUserFeedbacks', activityUserFeedbacks);
+app.use('/api/recordings', recordings);
+// app.use('/api/rooms', room_route);
+app.use('/api/activities', activities);
+// app.use('/api/activityUserFeedbacks', activityUserFeedbacks);
 app.use('/api/feedbacks', feedbacks);
 app.use('/api/meetings', meetings);
-app.use('/api/poses', poses);
+// app.use('/api/poses', poses);
 app.use('/api/syncscores', syncScores);
 
 
 
-const tests = require('./routes/tests');
-app.use('/api/tests', tests);
+// const tests = require('./routes/tests');
+// app.use('/api/tests', tests);
 
 //must be after routes call
 //for catch 500-400 errors
@@ -92,22 +89,22 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV;
 
-// two servers are created.
-// 1. app - listening to HTTP requests.
-app.listen(
+const httpServer = http.createServer(app)
+
+const socker = require('./socker');
+ socker(httpServer);
+
+//const {getIO, initIO} = require('./Socket');
+
+//initIO(httpServer);
+
+httpServer.listen(
   PORT,
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
 );
 
-// Socket setup
-// var io = socket(server);
-const socker = require('./socker');
-socker(server);
 
-// 2. server - listening to WebSockets connections.
-server.listen(PORT + 1, () => {
-  console.log(`Socker listening on port ${PORT + 1}!`);
-});
+//getIO(httpServer);
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {

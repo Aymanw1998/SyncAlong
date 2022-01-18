@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect } = require('../../middleware/auth');
 
 const {
   getSocialNetworks,
@@ -11,7 +11,7 @@ const {
   addFollowing,
   removeFollowing,
   changeConnection
-} = require('../controllers/social_networks');
+} = require('../../controllers/social_networks');
 
 router
     .route('/')

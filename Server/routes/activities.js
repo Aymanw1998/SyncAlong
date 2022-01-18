@@ -2,17 +2,17 @@ const express = require('express');
 const { protect } = require('../middleware/auth');
 
 const {
-  getActivitys,
+  getActivities,
   getActivity,
   updateActivity,
   createActivity,
   deleteActivity,
   addBasicBodyPartsActivity,
   removeBasicBodyPartsActivity
-} = require('../controllers/activitys');
+} = require('../controllers/activities');
 const router = express.Router();
 
-router.route('/').get(getActivitys).post(createActivity);
+router.route('/').get(getActivities).post(createActivity);
 
 router
   .route('/:name')

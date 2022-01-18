@@ -24,13 +24,7 @@ const syncscoreSchema = new mongoose.Schema({
   createdAt: {
       type: Date,
       default: Date.now
-  },
-  feedback: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'feedbacks',
-    required: true
-  }
-  
+  },  
 });
 
 

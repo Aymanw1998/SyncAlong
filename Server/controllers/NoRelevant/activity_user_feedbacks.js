@@ -1,7 +1,7 @@
-const asyncHandler = require('../middleware/async');
+const asyncHandler = require('../../middleware/async');
 const { ActivityUserFeedback } = require('../models/activity_user_feedbacks');
-const ErrorResponse = require('../utils/errorResponse');
-const { successResponse } = require('../utils/successResponse');
+const ErrorResponse = require('../../utils/errorResponse');
+const { successResponse } = require('../../utils/successResponse');
 
 // @desc    Get all ActivityUserFeedbacks
 // @route   GET /api/ActivityUserFeedbacks/

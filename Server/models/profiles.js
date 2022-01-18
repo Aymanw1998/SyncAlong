@@ -5,28 +5,17 @@ const crypto = require('crypto');
 const BodyPart = ['head', 'right hand', 'left hand', 'right leg', 'left leg', 'left'];
 
 const profileSchema = new mongoose.Schema({
-  user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
+  name: {
+      type: String,
+      required: [true, "Please Enter you full name"],
   },
-  gender: {
-    type: String,
-    enum: ['Male', 'Female'],
-    required: [true, "Please choose the gender"],
-  },
-  weight: {
-      type: Number,
-      required: [true, "Please add a weight"],
-  },
-  height: {
-      type: Number,
-      required: [true, "Please add a height"],
-  },
-  createdAt: {
-    type: Date, default: Date.now
-  },
-  updateAt: {
-    type: Date, default: Date.now
+  trainerOf: [{  //Indicates of the user-manager of elderly user who craeted by this.user._id (i can open user to my grama & naibar)
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
+  }],
+  traineeOf: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
   },
   ProhibitedBodyUpper: [{ // Prohibited areas in the body
     type: String,
@@ -44,8 +33,21 @@ const profileSchema = new mongoose.Schema({
     type: String,
     enum: BodyPart,
   }],
-  //פעילות רצויה באזורים בגוף
-});
+  future_meeting_id:[{ 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'meetings'
+  }],
+  performed_meeting_id:[{ 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'meetings'
+  }],
+  createdAt: {
+    type: Date, default: Date.now
+  },
+  updateAt: {
+    type: Date, default: Date.now
+  },
+  });
 //רוצה להראות ל?
 const Profile = mongoose.model('profiles', profileSchema);
 module.exports = { Profile, BodyPart };

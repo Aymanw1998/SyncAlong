@@ -5,10 +5,6 @@ const feedbackSchema = new mongoose.Schema({
   name: {
     type: String
   },
-  sync_score_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'socialnetworks',
-  },
   AR: {
     type: String,
   },

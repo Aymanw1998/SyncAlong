@@ -6,11 +6,11 @@ const meetingSchema = new mongoose.Schema({
   name: {
     type: String,
   },
-  host: {
+  host_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',
   },
-  participants: [{
+  participants_id: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',
   }],
@@ -22,6 +22,10 @@ const meetingSchema = new mongoose.Schema({
     type: Boolean, 
     default: false
   },
+  list_Activity_id: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'activities',
+  }],
   urlRoom:{
     type: String,
   }

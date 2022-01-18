@@ -7,8 +7,6 @@ const {
   createProfile,
   updateProfile,
   deleteProfile,
-  
-  getTrainers,
   createProfileFriend,
   updateProfileFriend,
   deleteProfileFriend,
@@ -18,6 +16,8 @@ const {
 
   removeBodyPartsProfile,
   removeBodyPartsProfileFriend,
+
+  getMyTrainer,
 
   scheduledMeetings,
   scheduledMeeting
@@ -31,8 +31,6 @@ router
       .post(protect, createProfile)
       .put(protect, updateProfile).
       delete(protect, deleteProfile);
-
-router.route('/trainer').get(protect, getTrainers); //הצגה של 
 router
       .route('/trainer/:id')
       .post(protect, createProfileFriend)

@@ -3,11 +3,11 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const poseSchema = new mongoose.Schema({
-  room_id: {
+  meeting_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'rooms'
+    ref: 'meetings'
   },
-  user: {
+  user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
   },
@@ -20,9 +20,9 @@ const poseSchema = new mongoose.Schema({
       type: Number
     }
   ],
-  Activity: {
+  activity_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Activitys',
+    ref: 'activities',
     required: true
   },
   createdAt: {

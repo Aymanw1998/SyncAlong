@@ -3,9 +3,9 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
-  user: {
-    type: String,
-    required: [true, 'Please add a user name'],
+  profile_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'profiles',
   },
   username: {
     type: String,
@@ -30,27 +30,23 @@ const userSchema = new mongoose.Schema({
     select: false
   },
   avatar: String,
+  role: {
+    type: String,
+    enum: ['user', 'elderly'],
+    default: 'user',
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+  status: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date, default: Date.now
   },
   updateAt: {
     type: Date, default: Date.now
   },
-  role: {
-    type: String,
-    enum: ['user', 'elderly'],
-    default: 'user',
-  },
-  trainerOf: [{  //Indicates of the user-manager of elderly user who craeted by this.user._id (i can open user to my grama & naibar)
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'users'
-  }],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'users'
-  },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
 });
 
 
