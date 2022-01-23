@@ -183,7 +183,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 const deleteUser = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'elderly') {
     return next(
-      new ErrorResponse(`you cannot delete yourself, yo are elderly`, 401)
+      new ErrorResponse(`you cannot delete yourself, you are elderly`, 401)
     );
   } else {
     //TO DO - delete your trainees
@@ -198,7 +198,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
       }
     }
     //TO DO - delete all data related to this user._id in all colections in db
-    User.deleteOne({ _id: req.user.id }, (err, data) => {
+    await User.deleteOne({ _id: req.user._id }, (err, data) => {
       if (err) {
         return next(new ErrorResponse(`delete failed`, 400));
       }
@@ -209,7 +209,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 
 /**
  * functions for Trainer user:
- * getAllFriend,  createFriend,  updateFriend,  deleteFriend
+ * getAllFriend, getFriend, createFriend,  updateFriend,  deleteFriend
  */
 
 // @desc    get all friends
@@ -223,7 +223,7 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  } else if (req.role === 'elderly') {
+  } else if (req.user.role === 'elderly') {
     return next(
       new ErrorResponse(`Cannot get friend becuse you are elderl+`, 400)
     );
@@ -242,6 +242,33 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
   }
 
   return successResponse(req, res, friends);
+});
+
+const getFriend = asyncHandler(async (req, res, next) => {
+  if (!req.user.profile_id) {
+    return next(
+      new ErrorResponse(
+        `Cannot create friend before create profile to your user`,
+        400
+      )
+    );
+  } else if (req.user.role === 'elderly') {
+    return next(
+      new ErrorResponse(`Cannot get friend becuse you are elderl+`, 400)
+    );
+  }
+  const profile = await Profile.findById(req.user.profile_id);
+  const trainerOf = profile.trainerOf;
+  if (trainerOf.length > 0) {
+    for (var i = 0; i < trainerOf.length; i++) {
+      if(trainerOf[i] == req.params.id) {
+        let userTra = await User.findById(req.params.id);
+        let profileTra = await Profile.findById(userTra.profile_id);
+        return successResponse(req, res, {user: userTra, profile: profileTra})
+      }
+    }
+  }
+  return next(new ErrorResponse(`the user don't have elderly with id: ${req.params.id}`,401));
 });
 
 // @desc    Create a frind - Elderly user with logIn-user account
@@ -310,14 +337,18 @@ const deleteFriend = asyncHandler(async (req, res, next) => {
   //delete from the array of user thet crared
   //!!!!Remeber To Myself!!!!! in client-side need a pop-up saying to the user all documents,video and activity with this user._id will be deleted.
   //If they will not be deleted the server may call a non-existent _id and throw an Error while trying to get simple data from db
-  let data = await User.findOneAndUpdate(
-    { _id: req.user.id },
-    { $pull: { trainerOf: req.params.id } }
+  const objId = new ObjectId(req.params.id);
+  let data = await Profile.findOneAndUpdate(
+    { _id: req.user.profile_id },
+    { $pull: { trainerOf: objId} }
   );
   if (data) {
-    // delete user from db
-    //TO DO-handle delete from all req from this delete user._id -from all colections in db
+    const user = await User.findById(objId);
+    await User.deleteOne({_id: user._id });
+    await Profile.deleteOne({_id: user.profile_id });
   }
+
+  return successResponse(req, res,`delete all data for user with id: ${req.params.id}`);
 });
 
 /**
@@ -336,7 +367,7 @@ const getMyTrainer = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  } else if (req.role === 'user') {
+  } else if (req.user.role === 'user') {
     return next(
       new ErrorResponse(`you are not elderly, you do not have trainer`, 400)
     );
@@ -434,6 +465,7 @@ module.exports = {
   searchUserByQuery,
   forgatPassword,
   resetPassword,
+  getFriend,
   getAllFriends,
   getMyTrainer,
   createFriend,
@@ -460,5 +492,9 @@ const sendTokenResponse = (user, statusCode, res) => {
   //   user._id,
   //   {$addToSet: {status: true}}
   //   );
-  res.status(200).json({ token: token });
+  //res.status(200).json({ token: token });
+  res.status(statusCode).cookie('token',token,options).json({ 
+    success: true,
+    token: token
+  });
 };

@@ -58,23 +58,17 @@ if (process.env.NODE_ENV === 'development') {
 const users = require('./routes/users');
 const profiles = require('./routes/profiles');
 const recordings = require('./routes/recordings');
-// const room_route = require('./routes/rooms');
 const activities = require('./routes/activities');
-// const activityUserFeedbacks = require('./routes/activity_user_feedbacks');
 const feedbacks = require('./routes/feedbacks');
 const meetings =require('./routes/meetings');
-const poses = require('./routes/poses');
 const syncScores = require('./routes/sync-scores');
 
 app.use('/api/users', users);
 app.use('/api/profiles', profiles);
 app.use('/api/recordings', recordings);
-// app.use('/api/rooms', room_route);
 app.use('/api/activities', activities);
-// app.use('/api/activityUserFeedbacks', activityUserFeedbacks);
 app.use('/api/feedbacks', feedbacks);
 app.use('/api/meetings', meetings);
-// app.use('/api/poses', poses);
 app.use('/api/syncscores', syncScores);
 
 
