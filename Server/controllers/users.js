@@ -10,12 +10,6 @@ const crypto = require('crypto');
 const { authorize } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 
-/**
- * functions for User (Trainer and Elderly):
- * getUsers,  getUser,  getUserById,  searchUserByQuery,
- * createUser,  loginUser,  updateUser,  deleteUser
- */
-
 // @desc    Get all users
 // @route   GET /api/users/
 // @access  Public
@@ -67,7 +61,7 @@ const searchUserByQuery = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get single user
-// @route   GET /api/users/loged
+// @route   GET /api/users
 // @access  Privit with token
 const getUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req._id);
@@ -91,6 +85,7 @@ const getUserById = asyncHandler(async (req, res, next) => {
 // @route   POST /api/users/
 // @access  Pablic
 const createUser = asyncHandler(async (req, res, next) => {
+  console.log(req.body);
   //Defines the level of encryption
   let salt = await bcrypt.genSalt(Number(process.env.SALT_KEY));
   req.body.password = await bcrypt.hash(req.body.password, salt);
@@ -104,11 +99,11 @@ const createUser = asyncHandler(async (req, res, next) => {
 
   //when logedIn user creating a friemd - it is an elderly friend.
   if (req.user) {
-    req.body.role = 'elderly';
+    req.body.role = 'trainee';
   }
 
   const user = await User.create(req.body);
-  if (req.body.role === 'elderly') {
+  if (req.body.role === 'trainee') {
     return user;
   } else {
     successResponse(req, res, user);
@@ -135,9 +130,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
   if (req.body.email)
     user = await User.findOne({ email: req.body.email }).select('+password');
   else if (req.body.username)
-    user = await User.findOne({ username: req.body.username }).select(
-      '+password'
-    );
+    user = await User.findOne({ username: req.body.username }).select('+password');
   console.log(user);
 
   if (user) {
@@ -174,6 +167,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
     req.body.password = await bcrypt.hash(req.body.password, salt);
   }
   let data = await User.updateOne({ _id: req.user.id }, req.body);
+  if (!data) return new ErrorResponse(`faild to update`, 401)
   return successResponse(req, res, 'update done!');
 });
 
@@ -181,29 +175,37 @@ const updateUser = asyncHandler(async (req, res, next) => {
 // @route   DELET /api/users/
 // @access  Private
 const deleteUser = asyncHandler(async (req, res, next) => {
-  if (req.user.role === 'elderly') {
+  if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`you cannot delete yourself, you are elderly`, 401)
+      new ErrorResponse(`you cannot delete yourself, you are trainee`, 401)
     );
   } else {
-    //TO DO - delete your trainees
+    //TO DO - delete your trainees (if i have any defens if i alrady have profile)
     const profile = await Profile.findById(req.user.profile_id);
-    const trainerOf = profile.trainerOf;
-    if (trainerOf.length > 0) {
-      for (var i = 0; i < trainerOf.length; i++) {
-        let id = trainerOf[i]; //user elderly
-        console.log('id', id);
-        req.params.id = id;
-        await deleteFriend(req, res,next);
+    if (profile) {
+      const trainerOf = profile.trainerOf;
+      if (trainerOf.length > 0) {
+        for (var i = 0; i < trainerOf.length; i++) {
+          let id = trainerOf[i]; //user elderly
+          console.log('id', id);
+          req.params.id = id;
+          //for now will dont do this....may has errors
+          //await deleteFriend(req, res, next);
+        }
       }
+
     }
+    return successResponse(req, res, 'need fixing , not dose anything for now')
+
+    //// its deltes but dose a wired Erorr!!!!!!!!!!! fix layter!!!!!!
+
     //TO DO - delete all data related to this user._id in all colections in db
-    await User.deleteOne({ _id: req.user._id }, (err, data) => {
-      if (err) {
-        return next(new ErrorResponse(`delete failed`, 400));
-      }
-      return successResponse(req, res, { data });
-    });
+    //  await User.deleteOne({ _id: req.user._id }, (err, data) => {
+    //   if (err) {
+    //     return next(new ErrorResponse(`delete failed`, 400));
+    //   }
+    //   return successResponse(req, res, { data });
+    // });
   }
 });
 
@@ -223,9 +225,10 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  } else if (req.user.role === 'elderly') {
+  }
+  if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`Cannot get friend becuse you are elderl+`, 400)
+      new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
     );
   }
   let friends = [];
@@ -240,7 +243,6 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
       friends.push({ userTra, profileTra });
     }
   }
-
   return successResponse(req, res, friends);
 });
 
@@ -252,23 +254,23 @@ const getFriend = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  } else if (req.user.role === 'elderly') {
+  } else if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`Cannot get friend becuse you are elderl+`, 400)
+      new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
     );
   }
   const profile = await Profile.findById(req.user.profile_id);
   const trainerOf = profile.trainerOf;
   if (trainerOf.length > 0) {
     for (var i = 0; i < trainerOf.length; i++) {
-      if(trainerOf[i] == req.params.id) {
+      if (trainerOf[i] == req.params.id) {
         let userTra = await User.findById(req.params.id);
         let profileTra = await Profile.findById(userTra.profile_id);
-        return successResponse(req, res, {user: userTra, profile: profileTra})
+        return successResponse(req, res, { user: userTra, profile: profileTra })
       }
     }
   }
-  return next(new ErrorResponse(`the user don't have elderly with id: ${req.params.id}`,401));
+  return next(new ErrorResponse(`the user don't have trainee with id: ${req.params.id}`, 401));
 });
 
 // @desc    Create a frind - Elderly user with logIn-user account
@@ -278,8 +280,8 @@ const createFriend = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
       new ErrorResponse(
-        `Cannot create friend before create profile to your user`,
-        400
+        `Cannot create friend before create profile to your user - first create a prifile and then create a user`,
+        402
       )
     );
   }
@@ -288,7 +290,7 @@ const createFriend = asyncHandler(async (req, res, next) => {
     $addToSet: { trainerOf: userFriend._id }
   });
   if (userFriend) {
-    return successResponse(req, res,userFriend);
+    return successResponse(req, res, userFriend);
   } else return next(new ErrorResponse(`failed to craete elderly user`, 400));
 });
 
@@ -340,15 +342,15 @@ const deleteFriend = asyncHandler(async (req, res, next) => {
   const objId = new ObjectId(req.params.id);
   let data = await Profile.findOneAndUpdate(
     { _id: req.user.profile_id },
-    { $pull: { trainerOf: objId} }
+    { $pull: { trainerOf: objId } }
   );
   if (data) {
     const user = await User.findById(objId);
-    await User.deleteOne({_id: user._id });
-    await Profile.deleteOne({_id: user.profile_id });
+    await User.deleteOne({ _id: user._id });
+    await Profile.deleteOne({ _id: user.profile_id });
   }
 
-  return successResponse(req, res,`delete all data for user with id: ${req.params.id}`);
+  return successResponse(req, res, `delete all data for user with id: ${req.params.id}`);
 });
 
 /**
@@ -453,7 +455,6 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 
   sendTokenResponse(user, 200, res);
 });
-
 module.exports = {
   getUsers,
   getUser,
@@ -476,7 +477,7 @@ module.exports = {
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  let token = createToken(user._id, user.email, user.username);
+  let token = createToken(user._id, user.email, user.username, user.avatar, user.profile_id);
 
   const options = {
     expires: new Date(
@@ -493,7 +494,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   //   {$addToSet: {status: true}}
   //   );
   //res.status(200).json({ token: token });
-  res.status(statusCode).cookie('token',token,options).json({ 
+  res.status(statusCode).cookie('token', token, options).json({
     success: true,
     token: token
   });

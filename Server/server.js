@@ -60,7 +60,7 @@ const profiles = require('./routes/profiles');
 const recordings = require('./routes/recordings');
 const activities = require('./routes/activities');
 const feedbacks = require('./routes/feedbacks');
-const meetings =require('./routes/meetings');
+const meetings = require('./routes/meetings');
 const syncScores = require('./routes/sync-scores');
 
 app.use('/api/users', users);
@@ -86,7 +86,7 @@ const NODE_ENV = process.env.NODE_ENV;
 const httpServer = http.createServer(app)
 
 const socker = require('./socker');
- socker(httpServer);
+socker(httpServer);
 
 //const {getIO, initIO} = require('./Socket');
 

@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'profiles',
   },
+  user: {//fall name
+    type: String,
+    required: [true, "Please add a user name"],
+  },
   username: {
     type: String,
     unique: true,
@@ -32,8 +36,8 @@ const userSchema = new mongoose.Schema({
   avatar: String,
   role: {
     type: String,
-    enum: ['user', 'elderly'],
-    default: 'user',
+    enum: ['trainer', 'trainee'],  //trainee is an elderly user!
+    default: 'trainer',
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

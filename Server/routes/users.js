@@ -27,30 +27,31 @@ router.route('/').get(getUsers);
 
 // CRUD Trainer
 router
-  .route('/user')
+  .route('/')
+  .get(protect, getUser)
   .post(createUser)
   .put(protect, updateUser)
   .delete(protect, deleteUser);
-router.route('/user/:id').get(getUserById);
+router.route('/:id').get(getUserById);
 
 //CRUD Trainee
 router
-  .route('/elderly')
+  .route('/trainee')
   .get(protect, getAllFriends)
   .post(protect, createFriend);
 router
-  .route('/elderly/mytrainer')
+  .route('/trainee/mytrainer')
   .get(protect, getMyTrainer);
 router
-  .route('/elderly/:id')
-  .get(protect,getFriend)
+  .route('/trainee/:id')
+  .get(protect, getFriend)
   .put(protect, updateFriend)
   .delete(protect, deleteFriend);
 
 router.route('/search').get(searchUserByQuery);
-router.route('/loged').get(protect, getUser);
 router.route('/login').post(loginUser);
 router.route('/forgatpass').post(forgatPassword);
 router.route('/resetpassword/:resettoken').put(resetPassword);
 
 module.exports = router;
+
