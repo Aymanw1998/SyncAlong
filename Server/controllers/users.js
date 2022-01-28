@@ -477,7 +477,7 @@ module.exports = {
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  let token = createToken(user._id, user.email, user.username, user.avatar, user.profile_id);
+  let token = createToken(user._id, user.email, user.username, user.role, user.profile_id, user.avatar);
 
   const options = {
     expires: new Date(
