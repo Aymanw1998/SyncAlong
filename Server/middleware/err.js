@@ -17,8 +17,14 @@ const errorHandler = (err, req, res, next) => {
     }
 
     // Mongoose duplicate key
+    let message;
     if (err.code === 11000) {
-        const message = `Duplicate field value entered of value ${err.keyValue.username}`;
+        if (err.keyPattern.email)
+            message = `Duplicate field value entered of email`;
+        else if (err.keyPattern.username)
+            message = `Duplicate field value entered of usename`;
+        else
+            message = `Duplicate field value`;
         error = new ErrorResponse(message, 400);
     }
 
@@ -27,7 +33,7 @@ const errorHandler = (err, req, res, next) => {
         const message = Object.values(err.errors).map(val => val.message);
         error = new ErrorResponse(message, 400);
     }
-    
+
     res.status(error.statusCode || 500).json({
         success: false,
         error: error.message || 'Server Error'
