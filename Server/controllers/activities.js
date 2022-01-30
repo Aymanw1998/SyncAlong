@@ -1,9 +1,13 @@
+const s3 = require('../utils/S3');
+const { v4: uuid } = require('uuid');
 const asyncHandler = require('../middleware/async');
 const { Activity } = require('../models/activities');
 const { getRecording } = require('./recordings');
 const ErrorResponse = require('../utils/errorResponse');
 const { successResponse } = require('../utils/successResponse');
-
+const path = require('path');
+const fs = require('fs');
+const { url } = require('inspector');
 // @desc    Get all Activities
 // @route   GET /api/activities/
 // @access  Public
@@ -24,53 +28,94 @@ const getActivity = asyncHandler(async (req, res, next) => {
 // @route   POST /api/activity/
 // @access  Private with token
 const createActivity = asyncHandler(async (req, res, next) => {
-  //body:
-  //      name
-  //      url for Recording
-  //      BasicBodyParts: Array
+  let url = null;
+  if (!req.body.url) {
+    return next(new ErrorResponse('send path about the demo', 401));
+  } else {
+    let activity = Activity.findOne({ name: req.body.name });
+    if (activity) {
+      return next(
+        new ErrorResponse(
+          `the activity with the name: [${req.body.name}] is exist`
+        )
+      );
+    }
+    await fs.readFile(req.body.url, async (err, data) => {
+      if (err) {
+        console.log(err);
+        res.status(err.code).send(err.message);
+      }
+      console.log(data);
+      let myFile = req.body.url.split('.');
+      const typeMyFile = null;
+      try {
+        typeMyFile = myFile[myFile.length - 1];
+      } catch (e) {
+        typeMyFile = req.body.url.split('.').at(-1);
+      }
+      const buffer = data;
+      const key = `demo/${uuid()}.${typeMyFile}`;
+      const bucket = process.env.AWS_BUCKET_NAME;
+      await s3.write(buffer, key, bucket);
+      console.log('uploaded');
+      url = await s3.getSignedURL(bucket, key, 60);
+      console.log(url);
+      await Activity.create({
+        name: req.body.name,
+        type: req.body.type,
+        time: req.body.time,
+        bodyArea: req.body.bodyArea,
+        demo: url,
+        feedback: req.body.feedback,
+      });
 
-  const recording = await getRecording(req, res, next);
-  let body = {
-    name: req.body.name,
-    file: file._id,
-    BasicBodyParts: req.body.BasicBodyParts
-  };
-  const activity = await Activity.create(body);
-
-  console.log('Activity:', activity);
-  return successResponse(req, res, { activity: activity });
+      activity = await Activity.findOne({ name: req.body.name });
+      return successResponse(req, res, activity);
+    });
+  }
 });
 
 // @desc    Update activities
 // @route   PUT /api/activity/:name
 // @access  Private with token
 const updateActivity = asyncHandler(async (req, res, next) => {
-  //body: url, or BasicBodyParts, or anything
   const activity = await Activity.findOne({ name: req.params.name });
   var changed = false;
   if (activity) {
     if (req.body.url) {
-      const file = await getFile(req, res, next);
-      await activity.findOneAndUpdate(
-        { _id: activity._id },
-        { $addToSet: { file: file._id } }
-      );
-      changed = true;
-    }
-    if (req.body.BasicBodyParts) {
-      await Activity.findOneAndUpdate(
-        { _id: Activity._id },
-        { $addToSet: { BasicBodyParts: req.body.BasicBodyParts } }
-      );
-      changed = true;
+      await fs.readFile(req.body.url, async (err, data) => {
+        if (err) {
+          console.log(err);
+          res.status(err.code).send(err.message);
+        }
+        console.log(data);
+        let myFile = req.body.url.split('.');
+        const typeMyFile = null;
+        try {
+          typeMyFile = myFile[myFile.length - 1];
+        } catch (e) {
+          typeMyFile = req.body.url.split('.').at(-1);
+        }
+        const buffer = data;
+        const key = `demo/${uuid()}.${typeMyFile}`;
+        const bucket = process.env.AWS_BUCKET_NAME;
+        await s3.write(buffer, key, bucket);
+        console.log('uploaded');
+        url = await s3.getSignedURL(bucket, key, 60);
+        console.log(url);
+        changed = true;
+      });
     }
   }
+  activity = await Activity.findByIdAndUpdate(activity._id, {
+    type: req.body.type,
+    time: req.body.time,
+    bodyArea: bodyArea,
+    demo: url,
+    feedback: req.body.feedback,
+  });
   activity = await Activity.findOne({ name: req.params.name });
-  if (changed) {
-    return successResponse(req, res, activity);
-  } else {
-    return next(new ErrorResponse(`missing url or BasicBodyParts`, 400));
-  }
+  return successResponse(req, res, activity);
 });
 
 // @desc    DELETE Activity
@@ -81,109 +126,14 @@ const deleteActivity = asyncHandler(async (req, res, next) => {
     if (err) {
       return next(new ErrorResponse(`delete failed`, 400));
     }
+    
     return successResponse(req, res, { data });
   });
 });
-
-// @desc    ADD/Remove basic body parts
-// @desc    id => _id for Activity,
-//          activity => ["add" OR "remove"],
-//          possibility => ["Prohibited" OR "Desirable"],
-//          body_Part => ['head', 'right hand', 'left hand', 'right leg', 'left leg', 'left']
-// @route
-// @access  Private (For another functions)
-const bodyPart = asyncHandler(async (id, activity, body_Part) => {
-  var isCorrect = false;
-  BodyPart.map((p) => {
-    if (p === body_Part) {
-      isCorrect = true;
-    }
-  });
-  if (!isCorrect) {
-    return false;
-  }
-  if (activity === 'add') {
-    try {
-      await Activity.findOneAndUpdate(
-        { _id: id },
-        { $addToSet: { BasicBodyParts: body_Part } }
-      );
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  } else {
-    // activity === "remove"
-    try {
-      await Activity.findOneAndUpdate(
-        { _id: id },
-        { $pull: { BasicBodyParts: body_Part } }
-      );
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
-});
-
-// @decs    Add basic body parts for Activity
-// @router  POST /api/activities/:name/body
-// @access  Private with token
-const addBasicBodyPartsActivity = asyncHandler(async (req, res, next) => {
-  let activity = await Activity.findOne({ name: req.params.name });
-  const basic_body_parts = req.body.basicBodyParts; // Array
-  if (basic_body_parts.length > 0) {
-    basic_body_parts.map(async (part) => {
-      let b = await bodyPart(activity._id, 'add', part);
-    });
-  }
-  activity = await Activity.findOne({ id: activity._id });
-  return successResponse(req, res, { activity });
-});
-
-// @decs    remove basic body parts for profile
-// @router  DELET /api/activities/body
-// @access  Private with token
-const removeBasicBodyPartsActivity = asyncHandler(async (req, res, next) => {
-  let activity = await Activity.findOne({ name: req.params.name });
-  const basic_body_parts = req.body.basicBodyPart; // Array
-  if (basic_body_parts.length > 0) {
-    basic_body_parts.map(async (part) => {
-      let b = await bodyPart(activity._id, 'remove', part);
-    });
-  }
-  activity = await Activity.findOne({ id: activity._id });
-  return successResponse(req, res, { activity });
-});
-
-
-/**************************************************************************************/
-
-const puseActivity = asyncHandler(async (req, res, next) => {
-
-});
-
-const stopActivity = asyncHandler(async (req, res, next) =>{
-
-});
-
-const continueActivity = asyncHandler(async (req, res, next) =>{
-
-});
-
-const changeActivity = asyncHandler(async (req, res, next) =>{
-
-});
-
-
 module.exports = {
   getActivities,
   getActivity,
   updateActivity,
   createActivity,
   deleteActivity,
-  addBasicBodyPartsActivity,
-  removeBasicBodyPartsActivity
 };

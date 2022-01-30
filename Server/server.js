@@ -88,17 +88,11 @@ const httpServer = http.createServer(app)
 const socker = require('./socker');
 socker(httpServer);
 
-//const {getIO, initIO} = require('./Socket');
-
-//initIO(httpServer);
-
 httpServer.listen(
   PORT,
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
 );
 
-
-//getIO(httpServer);
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {

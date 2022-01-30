@@ -1,7 +1,7 @@
 const users = [];
 //מערך ששומר יוזירים שהם בפגישות
 
-const addUser = ({ id, name, room, type }) => {
+const addUser = ({ id, name, meeting, type }) => {
   const usersInRoom = getUsersInRoom(room);
   if (usersInRoom.length < 2) {
     const existingUser = users.find(

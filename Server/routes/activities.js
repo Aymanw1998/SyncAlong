@@ -1,5 +1,6 @@
 const express = require('express');
 const { protect } = require('../middleware/auth');
+const multer = require('multer');
 
 const {
   getActivities,
@@ -7,22 +8,25 @@ const {
   updateActivity,
   createActivity,
   deleteActivity,
-  addBasicBodyPartsActivity,
-  removeBasicBodyPartsActivity
 } = require('../controllers/activities');
 const router = express.Router();
 
-router.route('/').get(getActivities).post(createActivity);
+const storage = multer.memoryStorage({
+  acl: 'public-read-write',
+  destination: (req, file, callback) => {
+    callback(null, '');
+  }
+});
+const upload = multer({ storage }).single('file_data');
 
+router.route('/')
+  .get(getActivities)
+  .post(upload,createActivity);
+  
 router
   .route('/:name')
   .get(getActivity)
   .put(updateActivity)
   .delete(deleteActivity);
 
-router
-  .route('/:name/body')
-  .post(addBasicBodyPartsActivity)
-  .delete(removeBasicBodyPartsActivity);
-
-  module.exports = router;
+module.exports = router;

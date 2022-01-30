@@ -5,12 +5,10 @@ const crypto = require('crypto');
 const meetingSchema = new mongoose.Schema({
   name: {
     type: String,
+    index: true,
+    required: [true, 'Enter name for the meeting']
   },
-  host_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'users',
-  },
-  participants_id: [{
+  users: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',
   }],
@@ -22,10 +20,14 @@ const meetingSchema = new mongoose.Schema({
     type: Boolean, 
     default: false
   },
-  list_Activity_id: [{
+  list_activity_id: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'activities',
   }],
+  room:{
+    type: String,
+    required: [true, 'Enter your name room']
+  },
   urlRoom:{
     type: String,
   }

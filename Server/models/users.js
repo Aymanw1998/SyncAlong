@@ -5,7 +5,11 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
   profile_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'profiles',
+    ref: 'profiles'
+  },
+  user: {//full name
+    type: String,
+    required: [true, "Please add a user name"],
   },
   user: {//fall name
     type: String,
@@ -14,22 +18,22 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
-    required: [true, "Please add a nick name"],
+    required: [true, 'Please add a nick name'],
     index: true
   },
   email: {
     type: String,
     unique: true,
-    required: [true, "Please add an email"],
+    required: [true, 'Please add an email'],
     match: [
       /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please add a valid email',
+      'Please add a valid email'
     ],
     index: true
   },
   password: {
     type: String,
-    required: [true, "Please add a password"],
+    required: [true, 'Please add a password'],
     minlength: 6,
     select: false
   },
@@ -46,13 +50,14 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   createdAt: {
-    type: Date, default: Date.now
+    type: Date,
+    default: Date.now
   },
   updateAt: {
-    type: Date, default: Date.now
-  },
+    type: Date,
+    default: Date.now
+  }
 });
-
 
 // Generate and hash password token
 userSchema.methods.getResetPasswordToken = function () {
@@ -85,7 +90,6 @@ userSchema.methods.generateEmailConfirmToken = function (next) {
   const confirmTokenCombined = `${confirmationToken}.${confirmTokenExtend}`;
   return confirmTokenCombined;
 };
-
 
 const User = mongoose.model('users', userSchema);
 module.exports = { User };

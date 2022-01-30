@@ -11,7 +11,7 @@ const { authorize } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 
 // @desc    Get all users
-// @route   GET /api/users/
+// @route   GET /api/users/all
 // @access  Public
 const getUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find();
@@ -61,7 +61,7 @@ const searchUserByQuery = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get single user
-// @route   GET /api/users
+// @route   GET /api/users/
 // @access  Privit with token
 const getUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req._id);
@@ -97,7 +97,7 @@ const createUser = asyncHandler(async (req, res, next) => {
   });
   req.body.avatar = avatar;
 
-  //when logedIn user creating a friemd - it is an elderly friend.
+  //when logedIn user creating a friemd - it is an trainee friend.
   if (req.user) {
     req.body.role = 'trainee';
   }
@@ -182,25 +182,24 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   } else {
     //TO DO - delete your trainees (if i have any defens if i alrady have profile)
     const profile = await Profile.findById(req.user.profile_id);
-    if (profile) {
+    if(profile){
       const trainerOf = profile.trainerOf;
       if (trainerOf.length > 0) {
         for (var i = 0; i < trainerOf.length; i++) {
-          let id = trainerOf[i]; //user elderly
+          let id = trainerOf[i]; //user trainee
           console.log('id', id);
           req.params.id = id;
-          //for now will dont do this....may has errors
+          //for now, don't do this, maybe has errors
           //await deleteFriend(req, res, next);
         }
       }
 
     }
-    return successResponse(req, res, 'need fixing , not dose anything for now')
+    return successResponse(req, res, 'need fixing , not dose anything for now');
 
-    //// its deltes but dose a wired Erorr!!!!!!!!!!! fix layter!!!!!!
-
+    //// its deletes but dose a wired Erorr!!!!!!!!!!! fix later!!!!!!
     //TO DO - delete all data related to this user._id in all colections in db
-    //  await User.deleteOne({ _id: req.user._id }, (err, data) => {
+    // await User.deleteOne({ _id: req.user._id }, (err, data) => {
     //   if (err) {
     //     return next(new ErrorResponse(`delete failed`, 400));
     //   }
@@ -209,15 +208,11 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-/**
- * functions for Trainer user:
- * getAllFriend, getFriend, createFriend,  updateFriend,  deleteFriend
- */
 
 // @desc    get all friends
 // @route   GET /api/users/trainer/alltrainee
 //@access   Private
-const getAllFriends = asyncHandler(async (req, res, next) => {
+const getAllTrainees = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
       new ErrorResponse(
@@ -225,7 +220,7 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  }
+  } 
   if (req.user.role === 'trainee') {
     return next(
       new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
@@ -246,18 +241,13 @@ const getAllFriends = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, friends);
 });
 
-const getFriend = asyncHandler(async (req, res, next) => {
+
+const getTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
-    return next(
-      new ErrorResponse(
-        `Cannot create friend before create profile to your user`,
-        400
-      )
-    );
-  } else if (req.user.role === 'trainee') {
-    return next(
-      new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
-    );
+    return next(new ErrorResponse(`Cannot create friend before create profile to your user`, 400));
+  } 
+  else if (req.user.role === 'trainee') {
+    return next(new ErrorResponse(`Cannot get friend becuse you are trainee`, 400));
   }
   const profile = await Profile.findById(req.user.profile_id);
   const trainerOf = profile.trainerOf;
@@ -266,45 +256,33 @@ const getFriend = asyncHandler(async (req, res, next) => {
       if (trainerOf[i] == req.params.id) {
         let userTra = await User.findById(req.params.id);
         let profileTra = await Profile.findById(userTra.profile_id);
-        return successResponse(req, res, { user: userTra, profile: profileTra })
+        return successResponse(req, res, { user: userTra, profile: profileTra });
       }
     }
   }
   return next(new ErrorResponse(`the user don't have trainee with id: ${req.params.id}`, 401));
 });
 
-// @desc    Create a frind - Elderly user with logIn-user account
+// @desc    Create a frind - trainee user with logIn-user account
 // @route   POST /api/users/trainer/trainee
 // @access  Private
-const createFriend = asyncHandler(async (req, res, next) => {
+const createTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
-    return next(
-      new ErrorResponse(
-        `Cannot create friend before create profile to your user - first create a prifile and then create a user`,
-        402
-      )
-    );
+    return next(new ErrorResponse(`Cannot create friend before create profile to your user`, 402));
   }
   let userFriend = await createUser(req, res, next);
-  const data = await Profile.findByIdAndUpdate(req.user.profile_id, {
-    $addToSet: { trainerOf: userFriend._id }
-  });
+  const data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: userFriend._id }});
   if (userFriend) {
     return successResponse(req, res, userFriend);
-  } else return next(new ErrorResponse(`failed to craete elderly user`, 400));
+  } else return next(new ErrorResponse(`failed to craete trainee user`, 400));
 });
 
-// @desc    Update Elderly Friend
+// @desc    Update trainee Friend
 // @route   PUT /api/users/trainer/trainee/:id
 // @access  Private
-const updateFriend = asyncHandler(async (req, res, next) => {
+const updateTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
-    return next(
-      new ErrorResponse(
-        `Cannot create friend before create profile to your user`,
-        400
-      )
-    );
+    return next(new ErrorResponse(`Cannot create friend before create profile to your user`, 400));
   }
   const profile = await Profile.findById(req.user.profile_id);
   const trainerOf = profile.trainerOf;
@@ -317,18 +295,13 @@ const updateFriend = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, 'update done!');
 });
 
-// @desc    Delete Elderly Friend from list
+// @desc    Delete trainee Friend from list
 // @route   DELETE /api/users/trainer/trainee/:id
 // @access  Private
 // ****not tested****
-const deleteFriend = asyncHandler(async (req, res, next) => {
+const deleteTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
-    return next(
-      new ErrorResponse(
-        `Cannot delete friend before create profile to your user`,
-        400
-      )
-    );
+    return next( new ErrorResponse(`Cannot delete friend before create profile to your user`, 400));
   }
   const profile = await Profile.findById(req.user.profile_id);
   const trainerOf = profile.trainerOf;
@@ -353,10 +326,6 @@ const deleteFriend = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, `delete all data for user with id: ${req.params.id}`);
 });
 
-/**
- * functions for Elderly user:
- * getMyTrainer
- */
 
 // @desc    get my trainer
 // @route   GET /api/users/trainee/mytrainer
@@ -364,19 +333,12 @@ const deleteFriend = asyncHandler(async (req, res, next) => {
 const getMyTrainer = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
-      new ErrorResponse(
-        `Cannot get you trainer before create profile to yourseif`,
-        400
-      )
-    );
-  } else if (req.user.role === 'user') {
-    return next(
-      new ErrorResponse(`you are not elderly, you do not have trainer`, 400)
-    );
+      new ErrorResponse(`Cannot get you trainer before create profile to yourseif`,400));
+  } else if (req.user.role === 'trainer') {
+    return next(new ErrorResponse(`you are not trainee, you do not have trainer`, 400));
   }
   const profile = await Profile.findById(req.user.profile_id);
   const traineeOf = profile.traineeOf;
-
   const traineeUser = await User.findById(traineeOf);
   const traineeProfile = await Profile.findById(traineeUser.profile_id);
   successResponse(req, res, {
@@ -399,9 +361,7 @@ const forgatPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // Create reset url
-  const resetUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/api/users/resetpassword/${resetToken}`;
+  const resetUrl = `${req.protocol}://${req.get('host')}/api/users/resetpassword/${resetToken}`;
 
   const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
@@ -466,12 +426,12 @@ module.exports = {
   searchUserByQuery,
   forgatPassword,
   resetPassword,
-  getFriend,
-  getAllFriends,
+  getTrainee,
+  getAllTrainees,
   getMyTrainer,
-  createFriend,
-  updateFriend,
-  deleteFriend
+  createTrainee,
+  updateTrainee,
+  deleteTrainee
 };
 
 // Get token from model, create cookie and send response

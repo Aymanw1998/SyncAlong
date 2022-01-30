@@ -2,55 +2,11 @@ const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const { successResponse } = require('../utils/successResponse');
 const { Profile } = require('../models/profiles');
-const { User } = require('../models/users');
 const { authorize } = require('../middleware/auth');
-const { getMeetings } = require('./meetings');
-
-let activities = {
-  arms: [
-    'left heand up-down on y-axis',
-    'right heand up-down on y-axis',
-    'both heands up-down on y-axis',
-    'both heands close-open on x-axis',
-    'left heand bending at angles 180to0 on x-axis',
-    'right heand bending at angles 180to0 on x-axis',
-    'both heands rotation on x-axis'
-  ],
-  abdomen: ['squats', 'crunches'],
-  legs_knees: [
-    'shoulders to the sides of the body and legs to bend 90 degrees',
-    'lift right leg on Y-axis up-down',
-    'lift left leg on Y-axis up-down',
-    'lift right leg on Y-axis and rotatian for x-axis',
-    'lift left leg on Y-axis and rotatian for x-axis',
-  ],
-  lower_back: [
-    'center body area and upper-body moves to right-left side on X-axis',
-  ],
-  upper_back: [
-    'stretching hands up 90 degrees without moving',
-  ],
-}
-const settingActivity = (reqbody) => {
-  if (reqbody.limitations) {
-    Object.keys(activities)
-      .filter(key => !reqbody.limitations.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = activities[key];
-        reqbody.system_activity_offers = obj;
-        return obj;
-      }, {});
-    console.log(reqbody.system_activity_offers);
-  }
-  //all activity is good
-  else {
-    reqbody.system_activity_offers = activities;
-    return activities;
-  }
-}
+const { User } = require('../models/users');
 
 // @desc    Get all Profiles
-// @route   GET /api/profiles/
+// @route   GET /api/profiles/all
 // @access  Public
 const getProfiles = asyncHandler(async (req, res, next) => {
   const profiles = await Profile.find();
@@ -64,7 +20,7 @@ const getProfile = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
       new ErrorResponse(
-        'you do not have profile, create profile for you befor that',
+        'you do not have profile, create profile for you before that',
         401
       )
     );
@@ -78,10 +34,10 @@ const getProfile = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const createProfile = asyncHandler(async (req, res, next) => {
   let profile = null;
-  //ckack if loged user has profile_id
+
   if (req.user.profile_id) {
     profile = await Profile.findById(req.user.profile_id);
-    if (profile && !req.params.id) { //chack for req.param for validat when call came from creatTrinee()
+    if (profile && !req.params.id) {
       return next(
         new ErrorResponse('you have profile, you must not create another', 401)
       );
@@ -91,15 +47,18 @@ const createProfile = asyncHandler(async (req, res, next) => {
   //settingActivity(req.body); //may be Unnecessary to set elemet activity in profile modle
 
   profile = await Profile.create(req.body);
-  //handel craet trainee
-  if (req.params.id) return profile;
-  //handle creat user tariner -when profile craeted seccsefuly 
-  // set up the user of profile_id
-  if (profile) {
-    //update user his new profile_id
-    let data = await User.findByIdAndUpdate(req.user._id, { profile_id: profile._id });
-    if (data)
+
+  if (req.params.id) {
+    return profile;
+  } else if (profile) {
+    let data = await User.findByIdAndUpdate(req.user._id, {
+      profile_id: profile._id
+    });
+    if (data) {
       successResponse(req, res, profile);
+    } else {
+      return next(new ErrorResponse('call error', 501));
+    }
   }
 });
 
@@ -110,39 +69,12 @@ const updateProfile = asyncHandler(async (req, res, next) => {
   req.body.updateAt = Date.now();
   let profile = await Profile.findById(req.user.profile_id);
   if (profile) {
-    //when limitations elment exists alrady 
-    // profile.limitations =['arms', 'baly','legs','niee'  ];
-    // req.body.limitations =['arms' ,'legs', 'abdomen' ]; //abdomen is new to push
-    // output new profile.limitations = ['arms' ,'legs', 'abdomen' ]
-    //   if (profile.limitations) {
-    //     req.body.limitations.map(element => {
-    //       let i = null;
-    //       console.log('element', element);
-    //       i = profile.limitations.find(el => el == element)
-    //       let index = profile.limitations.indexOf(i);
-    //       console.log('i', i);
-    //       console.log('iindex', index);
-
-    //       console.log('s', profile.limitations);
-    //       console.log('333s', profile.limitations.find(el => el == element));
-    //       if (!i && profile.limitations.find(el => el == element)) {
-    //         //profile.limitations.indexOf(index);
-    //         console.log(profile.limitations);
-    //         profile.limitations.splice(index, 1); //remove
-    //         console.log(profile.limitations);
-    //       }
-    //       else if (!i) profile.limitations.push(element);
-    //     })
-    //   }
-    //   else if (!profile.limitations)
-    //     profile.limitations = req.body.limitations;
-    //   // user.save();
-    //   // res.status(200).json(user)
-    // }
-    //profile.priority_areas = req.body.priority_areas;
     let updated = await Profile.updateOne({ _id: profile._id }, req.body);
-    if (updated) return successResponse(req, res, req.body);
-    else return next(new ErrorResponse('call error', 501));
+    if (updated) {
+      return successResponse(req, res, req.body);
+    } else {
+      return next(new ErrorResponse('call error', 501));
+    }
   }
 });
 
@@ -151,7 +83,7 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 // not tested!!!!!!!!
 const deleteProfile = asyncHandler(async (req, res, next) => {
-  if (req.user.role === 'trainee') { //elderly cant delete himself
+  if (req.user.role === 'trainee') {
     return next(
       new ErrorResponse(`you cannot delete yourself, you are trainee`, 401)
     );
@@ -208,43 +140,45 @@ const deleteTraineeProfile = asyncHandler(async (req, res, next) => {
       return successResponse(req, res, data);
     });
   }
+  else
+    return next(new ErrorResponse(`no profile id conected to this user`, 404));
 });
 
-// @desc    Delete profile
-// @route   GRT /api/profiles/trainee/:id
+// @desc    Get profile
+// @route   GET /api/profiles/trainee/:id
 // @access  Private with token
 const getTraineeProfile = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
-      new ErrorResponse(`Cannot get friend before create your elderlys`, 400)
+      new ErrorResponse(`Cannot get friend before create your trainees`, 400)
     );
-  }
+  } 
   else if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`Cannot get friend becuse you are elderly`, 400)
+      new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
     );
   }
+  const profile = await Profile.findById(req.user.profile_id);
 
-  //chack the the user-trainee has a profile to delete 
-  const trainee_profile = await User.findById(req.params.id);
-  console.log(trainee_profile);
-  if (trainee_profile?.profile_id) {
-    let isAuthorize = await authorize(req.params.id, profile.trainerOf);
-    if (!isAuthorize) return next(new ErrorResponse(`User is not authorize for chang deffrant user`, 403));
-    else
-      return successResponse(req, res, trainee_profile);
+  const trainee_user = await User.findById(req.params.id);
+  if (trainee_user?.profile_id) {
+    const trainee_profile = await Profile.findById(trainee_user.profile_id);
+    if(trainee_profile){
+      let isAuthorize = await authorize(req.params.id, profile.trainerOf);
+      if (!isAuthorize) return next(new ErrorResponse(`User is not authorize for chang deffrant user`, 403));
+      else return successResponse(req, res, trainee_profile);
+    }
   }
   else return new ErrorResponse(`must has a profile before!`, 404)
-
 });
 
-// @desc Create elderly profile
+// @desc Create trainee profile
 // @route POST /api/profiles/trainee/:id (id user)
 // @access Private with token
 const createTraineeProfile = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`Cannot create friend becuse you are elderly`, 400)
+      new ErrorResponse(`Cannot create friend becuse you are trainee`, 400)
     );
   }
   let testExistUser = await User.findById(req.params.id);
@@ -255,36 +189,33 @@ const createTraineeProfile = asyncHandler(async (req, res, next) => {
   }
   req.body.traineeOf = req.user._id;
   let profileFriend = await Profile.create(req.body);
-  console.log(profileFriend);
   if (profileFriend) {
-    try {
-      //upata the new profile trainee in user modle
-      let data = await User.findByIdAndUpdate(req.params.id, { profile_id: profileFriend._id });
-      if (data) {
+    try{
+      let data = await User.findByIdAndUpdate(req.params.id, {profile_id: profileFriend._id});
+      if(data){
         console.log(data);
-        //upade trainer and add id.trainee to list of tainees
-        data = await Profile.findByIdAndUpdate({ _id: req.user.profile_id }, {
-          $addToSet: { trainerOf: req.params._id }
-        });
-        if (data) successResponse(req, res, profileFriend);
-        else return next(new ErrorResponse(`filed upade trainer`, 402));
+        data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: req.params._id } });
+        if(data) {
+          successResponse(req, res, profileFriend);
+        }
+        else return next(new ErrorResponse(`filed update trainer`), 402);
       }
-      else return next(new ErrorResponse(`filed upade trainee`, 402));
+      else return next(new ErrorResponse(`filed update trainee`), 402);
     }
-    catch (error) {
-      console.error(error);
-      return next(new ErrorResponse(`error catch`, 402));
+    catch (e) {
+      console.log(e);
+      return next(new ErrorResponse(`error catch`, 402))
     }
   }
 });
 
-// @desc Update elderly profile
+// @desc Update trainee profile
 // @route PUT /api/profiles/trainee/:id (id user)
 // @access Private with token
 const updateTraineeProfile = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'trainee') {
     return next(
-      new ErrorResponse(`Cannot update friend becuse you are elderly`, 400)
+      new ErrorResponse(`Cannot update friend becuse you are trainee`, 400)
     );
   }
   let testExistUser = await User.findById(req.params.id);
@@ -301,62 +232,14 @@ const updateTraineeProfile = asyncHandler(async (req, res, next) => {
 
   req.body.updateAt = Date.now();
 
-  if (testExistUser?.profile_id) {
-    let updated = await Profile.findByIdAndUpdate({ _id: testExistUser.profile_id }, req.body);
+  if(testExistUser?.profile_id){
+    let updated = await Profile.findByIdAndUpdate(testExistUser.profile_id, req.body);
     if (updated) return successResponse(req, res, req.body);
     else return next(new ErrorResponse('call error', 501));
   }
   else return next(new ErrorResponse('profile not found', 40));
+
 });
-
-
-
-// // @decs    get all meetings for profile
-// // @router  GET /api/profiles/scheduled/
-// // @access  Private with token
-// const scheduledMeetings = asyncHandler(async (req, res, next) => {
-//   let meetings = [];
-//   const myProfile = await Profile.findById(req.user.profile_id);
-//   if (myProfile) {
-//     const future_meeting_id = myProfile.future_meeting_id;
-//     const performed_meeting_id = myProfile.performed_meeting_id;
-
-//     for (let i = 0; i < future_meeting_id.length; i++) {
-//       req.params.id = future_meeting_id[i];
-//       const meeting = await getMeetings(req, res, next);
-//       meetings.push(meeting);
-//     }
-//     for (let i = 0; i < future_meeting_id.length; i++) {
-//       req.params.id = future_meeting_id[i];
-//       const meeting = await getMeetings(req, res, next);
-//       meetings.push(meeting);
-//     }
-//     successResponse(req, res, { meetings });
-//   }
-// });
-
-// // @decs    get meeting for profile
-// // @router  GET /api/profiles/scheduled/:id
-// // @access  Private with token
-// const scheduledMeeting = asyncHandler(async (req, res, next) => {
-//   if (!req.params.id) {
-//     return next(new ErrorResponse('missing id param', 401));
-//   }
-
-//   await getMeetings(req, res, next)
-//     .then((data) => {
-//       let meeting = data.meetings.filter((meet) => meet._id === req.params.id);
-//       if (!meeting)
-//         return next(
-//           new ErrorResponse(`don't have meeting with id: ${req.params.id}`, 401)
-//         );
-//       return successResponse(req, res, { meeting });
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       return next(new ErrorResponse(err, 401));
-//     });
-// });
 
 module.exports = {
   getProfiles,
@@ -368,6 +251,4 @@ module.exports = {
   getTraineeProfile,
   createTraineeProfile,
   updateTraineeProfile,
-  // scheduledMeetings,
-  // scheduledMeeting
 };

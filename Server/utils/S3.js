@@ -10,7 +10,7 @@ const S3 = {
     const params = {
       Bucket: bucket,
       Key: fileName,
-      acl: 'public-read'
+      acl: 'public-read-write'
     };
 
     let data = await s3Client.getObject(params).promise();
@@ -24,27 +24,35 @@ const S3 = {
     }
     return data;
   },
-  async write(data, fileName, bucket) {
+  async write(data, key, bucket) {
     const params = {
       Bucket: bucket,
       Body: Buffer.isBuffer(data) ? data : JSON.stringify(data),
-      Key: fileName
+      Key: key,
+      ACL: 'public-read-write'
     };
     console.log('params', params);
 
     const newData = await s3Client.putObject(params).promise();
     if (!newData) {
       throw Error('there was an error writing the file');
+    } else {
+      return `https//:${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
     }
-    return newData;
   },
 
-  async getSignedURL(bucket, fileName, expriySeconds) {
-    return s3Client.getSignedUrl('getObject', {
+  async getSignedURL(bucket, key, expriySeconds) {
+    const params = {
       Bucket: bucket,
-      Key: fileName,
+      Key: key,
       Expires: expriySeconds
-    });
+    };
+    const newData = await s3Client.getSignedUrl('getObject', params);
+    if (!newData) {
+      throw Error('there was an error writing the file');
+    } else {
+      return `https//:${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
+    }
   },
 
   async delete(bucket, filepath) {

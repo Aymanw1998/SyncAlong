@@ -1,30 +1,20 @@
 const express = require('express');
 const { protect } = require('../middleware/auth');
 
-const {
-      getProfiles,
-      getProfile,
-      createProfile,
-      updateProfile,
-      deleteProfile,
-      getTraineeProfile,
-      createTraineeProfile,
-      deleteTraineeProfile,
-      updateTraineeProfile,
-      scheduledMeetings,
-      scheduledMeeting
-} = require('../controllers/profiles');
+const { getProfiles, getProfile, createProfile, updateProfile, deleteProfile,
+        getTraineeProfile, createTraineeProfile, updateTraineeProfile, deleteTraineeProfile,
+      } = require('../controllers/profiles');
 const router = express.Router();
 
 router
+      .route('/all')
+      .get(getProfiles);
+router
       .route('/')
-      .get(getProfiles)
+      .get(protect, getProfile)
       .post(protect, createProfile)
       .put(protect, updateProfile)
-      .get(protect, getProfile)
-      .put(protect, updateProfile).
-      delete(protect, deleteProfile);
-
+      .delete(protect, deleteProfile);
 router
       .route('/trainee/:id')
       .get(protect, getTraineeProfile)
@@ -32,7 +22,4 @@ router
       .put(protect, updateTraineeProfile)
       .delete(protect, deleteTraineeProfile);
 
-// router.route('/scheduled').get(protect, scheduledMeetings);
-// router.route('/scheduled/:id').get(protect, scheduledMeeting);
 module.exports = router;
-

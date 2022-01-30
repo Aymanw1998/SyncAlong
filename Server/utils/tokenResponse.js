@@ -12,4 +12,5 @@ const createToken = (_id, _email, _user, _role, _profile_id, _avatar) => {
     console.log(newToken)
     return newToken;
 }
+
 exports.createToken = createToken;

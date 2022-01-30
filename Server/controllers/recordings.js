@@ -36,11 +36,11 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
     // Body/buffer (the information or data)
 
     const buffer = req.file.buffer;
-    const key = `${uuid()}.${typeMyFile}`;
+    const key = `Recordings/${uuid()}.${typeMyFile}`;
     const bucket = process.env.AWS_BUCKET_NAME;
     await s3.write(buffer, key, bucket);
     console.log('uploaded');
-    const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
+    const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME,  key, 60);
     console.log('url: ', url);
     await Recording.create({
       name: key,

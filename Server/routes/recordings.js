@@ -8,7 +8,7 @@ const {
 } = require('../controllers/recordings');
 
 const storage = multer.memoryStorage({
-  acl: 'public-read',
+  acl: 'public-read-write',
   destination: (req, file, callback) => {
     callback(null, '');
   }
