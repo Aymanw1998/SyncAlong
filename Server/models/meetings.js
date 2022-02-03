@@ -21,13 +21,8 @@ const meetingSchema = new mongoose.Schema({
     default: false
   },
   list_activity_id: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'activities',
-  }],
-  room:{
     type: String,
-    required: [true, 'Enter your name room']
-  },
+  }],
   urlRoom:{
     type: String,
   }
