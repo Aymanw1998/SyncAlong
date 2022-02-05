@@ -1,78 +1,120 @@
-const {Server} = require('socket.io');
+const { Server } = require('socket.io');
 const {
-  addUser,
-  removeUser,
+  addUser, getUsers, joinUser,
   getUser,
+  removeUser,
   getUsersInRoom,
-  hasRoom,
-  removeRoom
 } = require('./users');
 
 const socker = (server) => {
-  const io = new Server(server,{
-      cors: {
-          original: '*',
-          methods: ["GET", "POST"] 
-      }
+  const io = require("socket.io")(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
   });
-  io.on('connection',(socket) => {
-    console.log("Hi socket", socket.id);
-    socket.on('join', ({ name, room }, callback) => {
-      //useEffect emit join
-      console.log("Hi joined");
-      const existRoom = hasRoom(room);
-      let type = 'create';
-      if (existRoom) {
-        type = 'join';
-      }
-      console.log("type: ", type);
-      const { error, user } = addUser({ id: socket.id, name, room, type });
-      console.log("user: ", user);
-      if (error) {
-        return callback(error);
-      }
 
-      socket.join(user.room);
+  io.on('connection', (socket) => {
+    console.log("user conectted! socket=", socket.id);
+    //when im enttering the system i have diffrent socket id 
+    socket.on('addUser', (user_id, room_id) => {
+      addUser(user_id, socket.id, room_id);
+      let users = getUsers();
+      let user = getUser(user_id);
+      console.log('user in the app', users);
+      console.log('user added', user);
+      //io.emit("getUsers", users);
+      //io.broadcast.emit("getNewUserAddToApp", user);
+      io.emit("getNewUserAddToApp", user);
+    });
 
-      //socket.emit('message', {me: user.id, text: `${user.id}, welcome to the room`});
+    socket.on('me', (user_id) => {
+      console.log('user_id', user_id);
+      console.log('aalll', getUsers());
+      let user = getUser(user_id);
+      console.log('userrrrr', user);
+      io.emit("mySocketId", user);
+      // io.emit("yourSocketId", user);
+    });
 
-      //socket.broadcast.to(user.room).emit('message', {you: user.id, text: `${user.id}, has joined!`});
+    socket.on('getSocketId', (user_id, callback) => {
+      let user = getUser(user_id);
+      console.log('userrrrr', user_id, user);
+      callback(user)
+      // io.emit("yourSocketId", user);
+    });
 
-      socket.to(user.room).emit('peers', { users: getUsersInRoom(user.room) });
-      io.to(user.room).emit('roomData', {
-        room: user.room,
-        users: getUsersInRoom(user.room)
+    socket.on('joinUser', (from, to, roomId, callback) => {
+      //console.log(from, to, roomId);
+      joinUser(from, roomId);
+      let users = getUsersInRoom(roomId);
+      //console.log('users from joinUser', users);
+      callback(users)
+
+      const user = getUser(to);
+      user && io.to(user?.socketId).emit("callAccepted", {
+        joind: from,
+        roomId: roomId,
+        participantsInRoom: users
+      });
+    });
+
+
+    socket.on("callUser", ({ userToCall, signalData, from, name }) => {
+      // callback(users)
+      //console.log('calll user ', userToCall, signalData, from, name);
+      io.to(userToCall).emit("callUser", { signal: signalData, from, name });
+    });
+
+    socket.on("answerCall", (data) => {
+      io.to(data.to).emit("callAccepted", data.signal)
+    });
+
+    //send of peer1 the list of his pose 
+    socket.on('sendPoseMessage', (senderId, receiverId, message) => {
+      const user = getUser(receiverId);
+      io.to(user.socketId).emit("getPoseMessage", {
+        senderId,
+        message //including date, time, array, action 
+      });
+    });
+    //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
+    socket.on('sendBouthPoses', (senderId, receiverId, roomId, message) => {
+      //{
+      // do sync algoritem and retrn a number value....
+      // sync algorutem will be in the sync modle controllers
+      // sync_score = number between 0-1
+      // }
+      const sync_score = null;
+      const user = getUser(receiverId);
+
+      io.to(user.socketId).emit("getSyncScore", {
+        sync_score
       });
 
-      callback();
+      //peer2 to himself
+      io.emit("getSyncScore", {
+        sync_score
+      });
+      // const user = getUser(socket.id);
+      // io.to(user.roomId).emit('message', { user: user.id, text: message });
     });
 
-    socket.on('sendMessage', (message, callback) => {
-      const user = getUser(socket.id);
-      io.to(user.room).emit('message', { user: user.id, text: message });
-      callback();
+    //for hand marks and for a pop-up to user when his tainer set up a meeting with him
+    socket.on("sendNotification", ({ senderId, receiverId, type }) => {
+      const receiver = getUser(receiverId);
+      io.to(receiver.socketId).emit("getNotification", {
+        senderId,
+        type,
+      });
     });
 
-    socket.on('disconnect', () => {
-      const user = getUser(socket.id);
-      try{
-        if (user.type == 'create') {
-          const data = removeRoom(user.room);
-          socket.to(user.room).emit('leave');
-          return callback('all Users leaved');
-        } else {
-          removeUser(socket.id);
-          socket.emit('leave');
-          return callback(`the user ${user.id} leaved`);
-        }
-      }catch(e) {
-        console.log(e.red);
-      }
+    socket.on("disconnect", () => {
+      console.log("a user disconnected! socket=", socket.id);
+      //removeUser(socket.id);
+      // let users = getUsersInRoom();
+      // io.emit("getUsers", users);
     });
-    // socket.on('sendIdPoses', (data, callback) =>{
-    //     io.broadcast.to(getUser(socket.id).room).emit('resivingIdPoses', data);
-    //     callback();
-    // })
   });
 
   return io;

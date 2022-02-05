@@ -13,6 +13,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const cors = require('cors');
+const multer = require('multer')
 
 // Load env vars
 dotenv.config({ path: './config/.env' });
@@ -26,9 +27,9 @@ connectDB();
 //Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 // Cookie parser when login user the token is saved in the server and send to http client
-//
 app.use(cookieParser());
 
 //Prevent attects
@@ -55,30 +56,48 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Route middleware
+app.get('/', (req, res) => { res.send('Server is up and running'); });
 const users = require('./routes/users');
 const profiles = require('./routes/profiles');
 const recordings = require('./routes/recordings');
 const meetings = require('./routes/meetings');
 const syncScores = require('./routes/sync-scores');
-
 app.use('/api/users', users);
 app.use('/api/profiles', profiles);
 app.use('/api/recordings', recordings);
 app.use('/api/meetings', meetings);
 app.use('/api/syncscores', syncScores);
 
+//uploud imgs to server (for avatar potos)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  try {
+    return res.status(200).json("File uploded successfully");
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 //must be after routes call
 //for catch 500-400 errors
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-const NODE_ENV = process.env.NODE_ENV;
-
+//socket connection
 const httpServer = http.createServer(app)
-
 const socker = require('./socker');
 socker(httpServer);
 
+//lisining....
+const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV;
 httpServer.listen(
   PORT,
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)

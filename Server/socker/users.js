@@ -1,47 +1,47 @@
 const users = [];
-//מערך ששומר יוזירים שהם בפגישות
+//{userId, socketId, roomId, type}
 
-const addUser = ({ id, name, meeting, type }) => {
-  const usersInRoom = getUsersInRoom(room);
-  if (usersInRoom.length < 2) {
-    const existingUser = users.find(
-      (user) => user.room === room && user.id === room.id
-    );
+const addUser = (userId, socketId, roomId) => {
+  //add user to array only if he is not there
+  !users.some((user) => user.userId === userId) &&
+    users.push({ userId, socketId, roomId });
+};
 
-    if (existingUser) {
-      return { error: 'User is taken' };
+const joinUser = (userId, roomId) => {
+  users.find(user => {
+    if (user.userId == userId)
+      user.roomId = roomId;
+  })
+}
+
+const removeUser = (socketId) => {
+  console.log(users.length);
+  users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+  let found_user = null;
+  users.find((user) => {
+    if (user.userId === userId) {
+      found_user = user;
     }
+  });
+  return found_user;
+}
 
-    const user = { id, name, room, type };
-    users.push(user);
-    return { user };
-  } else return { error: 'Room is full' };
+const getUsersInRoom = (roomId) => {
+  let usersInRoom = users.filter((user) => user.roomId === roomId)
+  //console.log('usersInRoom', usersInRoom);
+  return usersInRoom;
 };
 
-const removeUser = (id) => {
-  const index = users.findIndex((user) => user.id === id);
+const getUsers = () => { return users; }
 
-  if (index !== -1) {
-    return users.splice(index, 1)[0];
-  }
-  return null;
+module.exports = {
+  addUser,
+  joinUser,
+  getUsers,
+  removeUser,
+  getUser,
+  getUsersInRoom
 };
-
-const getUser = (id) => users.find((user) => user.id === id);
-
-const removeRoom = (room) => {
-  const usersInRoom = getUsersInRoom(room);
-  for (const user of usersInRoom) {
-    removeUser(user.id);
-  }
-};
-const getUsersInRoom = (room) => users.filter((user) => user.room === room);
-
-const hasRoom = (room) => {
-  const list = getUsersInRoom(room);
-  if (list.length > 0) {
-    return true;
-  } else return false;
-};
-
-module.exports = { addUser, removeUser, getUser, getUsersInRoom, hasRoom, removeRoom };
