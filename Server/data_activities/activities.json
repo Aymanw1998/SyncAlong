@@ -1,4 +1,58 @@
-{
+{    
+    "upper":[
+    {
+        "id":1,
+        "name": "Back Turns",
+        "bodyPart": ["right hand","left hand"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/ef496157-3c75-413d-aee6-c0977d8ab43e.mp4"
+         },{
+        "id":2,
+        "name": "Arm Circles",
+        "bodyPart": ["right hand","left hand"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/186435fd-6190-47ae-8eae-26e85968dd7f.mp4"
+       }
+    ],
+    "lower":[
+    {
+        "id":1,
+        "name": "Side Leg Raise",
+        "bodyPart": ["right leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/5a894d52-ba32-420d-9adb-503a6ea53a1b.mp4"
+    },{
+        "id":2,
+        "name": "Side Leg Raise Right",
+        "bodyPart": ["right leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/d048cba8-7c73-4aa8-970b-daa3234c479e.mp4"
+    },{
+        "id":3,
+        "name": "Side Leg Raise Left",
+        "bodyPart": ["left leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/c5a2dca7-64c1-4672-b824-53238fa5d289.mp4"
+    }
+    ],
+    "full_body":[
+    {
+        "id":1,
+        "name": "Jumping Jacks",
+        "bodyPart": ["right hand","left hand", "right leg", "left leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/27a9ad0a-af5f-4017-b920-3f783058bd25.mp4"
+    },{
+        "id":2,
+        "name": "Lateral Steps",
+        "bodyPart": ["right hand","left hand", "right leg", "left leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/dfb621b9-2cc6-43e2-9d89-8f85e7123a91.mp4"
+    },{
+        "id":3,
+        "name": "Split Jumps",
+        "bodyPart": ["right leg", "left leg"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/1fd0818b-46b2-43d3-be7d-07f620225d61.mp4"
+    },{
+        "id":4,
+        "name": "Side Bends",
+        "bodyPart": ["right shoulder","left shoulder","right hand","left hand", "chest"],
+        "demo": "https//:syncalong-v1.s3.eu-west-1.amazonaws.com/demo/7552bd6a-5b94-4484-af3b-c21ac1ddf0b3.mp4"
+    }
+    ],
     "1": {
         "name": "Back Turns",
         "bodyPart": ["right hand","left hand"],

@@ -7,17 +7,22 @@ const {
   getMeeting,
   createMeeting,
   updateMeeting,
-  deleteMeeting
+  deleteMeeting,
+  getCustomActivities
 } = require('../controllers/meetings');
 
 router
-    .route('/')
-    .get(protect, getMeetings)
-    .post(protect, createMeeting);
+  .route('/')
+  .get(protect, getMeetings)
+  .post(protect, createMeeting);
 router
-  .route('/:name')
+  .route('/:id')
   .get(protect, getMeeting)
   .put(protect, updateMeeting)
   .delete(protect, deleteMeeting);
+router
+  .route('/ouractivities/:id') //traniee id
+  .get(protect, getCustomActivities)
+
 
 module.exports = router;

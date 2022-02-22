@@ -1,29 +1,28 @@
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 
 const meetingSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    index: true,
-    required: [true, 'Enter name for the meeting']
+  tariner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users'
   },
-  users: [{
+  trainee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',
-  }],
+    required: [true, "Please add a trainee"],
+
+  },
   date: {
-      type: Date,
-      default: Date.now
+    type: String,
+    required: [true, "Please add a date by -> new Date(y, m, d, h, m)"],
   },
   status: {
-    type: Boolean, 
+    type: Boolean,
     default: false
   },
-  list_activity_id: [{
-    type: String,
+  activities: [{
+    type: String
   }],
-  urlRoom:{
+  urlRoom: {
     type: String,
   }
 });

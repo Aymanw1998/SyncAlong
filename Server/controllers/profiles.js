@@ -29,6 +29,7 @@ const getProfile = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, profile);
 });
 
+
 // @desc    Create new profile
 // @route   POST /api/profiles/
 // @access  Private with token
@@ -43,9 +44,6 @@ const createProfile = asyncHandler(async (req, res, next) => {
       );
     }
   }
-  //creat system_activity_offers with req.body.limitations
-  //settingActivity(req.body); //may be Unnecessary to set elemet activity in profile modle
-
   profile = await Profile.create(req.body);
 
   if (req.params.id) {
@@ -152,7 +150,7 @@ const getTraineeProfile = asyncHandler(async (req, res, next) => {
     return next(
       new ErrorResponse(`Cannot get friend before create your trainees`, 400)
     );
-  } 
+  }
   else if (req.user.role === 'trainee') {
     return next(
       new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
@@ -163,7 +161,7 @@ const getTraineeProfile = asyncHandler(async (req, res, next) => {
   const trainee_user = await User.findById(req.params.id);
   if (trainee_user?.profile_id) {
     const trainee_profile = await Profile.findById(trainee_user.profile_id);
-    if(trainee_profile){
+    if (trainee_profile) {
       let isAuthorize = await authorize(req.params.id, profile.trainerOf);
       if (!isAuthorize) return next(new ErrorResponse(`User is not authorize for chang deffrant user`, 403));
       else return successResponse(req, res, trainee_profile);
@@ -190,12 +188,12 @@ const createTraineeProfile = asyncHandler(async (req, res, next) => {
   req.body.traineeOf = req.user._id;
   let profileFriend = await Profile.create(req.body);
   if (profileFriend) {
-    try{
-      let data = await User.findByIdAndUpdate(req.params.id, {profile_id: profileFriend._id});
-      if(data){
+    try {
+      let data = await User.findByIdAndUpdate(req.params.id, { profile_id: profileFriend._id });
+      if (data) {
         console.log(data);
         data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: req.params._id } });
-        if(data) {
+        if (data) {
           successResponse(req, res, profileFriend);
         }
         else return next(new ErrorResponse(`filed update trainer`), 402);
@@ -232,7 +230,7 @@ const updateTraineeProfile = asyncHandler(async (req, res, next) => {
 
   req.body.updateAt = Date.now();
 
-  if(testExistUser?.profile_id){
+  if (testExistUser?.profile_id) {
     let updated = await Profile.findByIdAndUpdate(testExistUser.profile_id, req.body);
     if (updated) return successResponse(req, res, req.body);
     else return next(new ErrorResponse('call error', 501));

@@ -11,10 +11,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please add a user name"],
   },
-  user: {//fall name
-    type: String,
-    required: [true, "Please add a user name"],
-  },
   username: {
     type: String,
     unique: true,

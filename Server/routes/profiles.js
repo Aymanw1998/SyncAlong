@@ -2,8 +2,8 @@ const express = require('express');
 const { protect } = require('../middleware/auth');
 
 const { getProfiles, getProfile, createProfile, updateProfile, deleteProfile,
-        getTraineeProfile, createTraineeProfile, updateTraineeProfile, deleteTraineeProfile,
-      } = require('../controllers/profiles');
+      getTraineeProfile, createTraineeProfile, updateTraineeProfile, deleteTraineeProfile,
+} = require('../controllers/profiles');
 const router = express.Router();
 
 router
