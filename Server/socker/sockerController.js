@@ -1,10 +1,14 @@
 const { Server } = require('socket.io');
+
 const {
   addUser, getUsers, joinUser,
   getUser,
   removeUser,
   getUsersInRoom,
 } = require('./users');
+
+// const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
+// const { angles_between_joints } = require('../syncAlgorithm/angles_between_joints');
 
 const socker = (server) => {
   const io = require("socket.io")(server, {
@@ -41,63 +45,60 @@ const socker = (server) => {
       let user = getUser(user_id);
       console.log('userrrrr', user_id, user);
       callback(user)
-      // io.emit("yourSocketId", user);
     });
 
     socket.on('joinUser', (from, to, roomId, callback) => {
-      //console.log(from, to, roomId);
+      socket.join(roomId);
       joinUser(from, roomId);
       let users = getUsersInRoom(roomId);
-      //console.log('users from joinUser', users);
-      callback(users)
+      //callback(users)
+      let res = roomId;
+      io.to(roomId).emit("responsRoomId", res);
 
-      const user = getUser(to);
-      user && io.to(user?.socketId).emit("callAccepted", {
-        joind: from,
-        roomId: roomId,
-        participantsInRoom: users
-      });
+      // const user = getUser(to);
+      // user && io.to(user?.socketId).emit("callAccepted", {
+      //   joind: from,
+      //   roomId: roomId,
+      //   participantsInRoom: users
+      // });
     });
 
-
     socket.on("callUser", ({ userToCall, signalData, from, name }) => {
-      // callback(users)
-      //console.log('calll user ', userToCall, signalData, from, name);
       io.to(userToCall).emit("callUser", { signal: signalData, from, name });
     });
 
-    socket.on("answerCall", (data) => {
-      io.to(data.to).emit("callAccepted", data.signal)
+    socket.on("ourDelay", data => {
+      io.to(data.to).emit("ourDelay", data.delay);
     });
 
-    //send of peer1 the list of his pose 
-    socket.on('sendPoseMessage', (senderId, receiverId, message) => {
-      const user = getUser(receiverId);
-      io.to(user.socketId).emit("getPoseMessage", {
-        senderId,
-        message //including date, time, array, action 
-      });
+    socket.on("answerCall", (data) => {
+      io.to(data.to).emit("callAccepted", data.signal, data.start_delay)
     });
+
+    socket.on("sendPoses", (data) => {
+      io.to(data.to).emit("resivingPoses", data)
+    })
+
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
-    socket.on('sendBouthPoses', (senderId, receiverId, roomId, message) => {
+    socket.on('sendOurPoses', (data) => {
+      {/*
+      me:{poses:[33][33][33][33]}},
+      you:{poses:[33][33][33][33][33][33]...}}.
+      activity: "hands-up",
+      time: "date now",
+      roomId: '1'
+*/}
       //{
       // do sync algoritem and retrn a number value....
       // sync algorutem will be in the sync modle controllers
       // sync_score = number between 0-1
       // }
-      const sync_score = null;
-      const user = getUser(receiverId);
+      let sync_score = null //procrustes_analysis(data);;
+      //save in db of both usesr 
 
-      io.to(user.socketId).emit("getSyncScore", {
-        sync_score
-      });
 
-      //peer2 to himself
-      io.emit("getSyncScore", {
-        sync_score
-      });
-      // const user = getUser(socket.id);
-      // io.to(user.roomId).emit('message', { user: user.id, text: message });
+      //send back to bouth in room
+      io.to(data.roomId).emit("syncScore", sync_score);
     });
 
     //for hand marks and for a pop-up to user when his tainer set up a meeting with him

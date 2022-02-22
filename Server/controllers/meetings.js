@@ -30,6 +30,27 @@ const getMeetings = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, meetings);
 });
 
+const getFutureMeetings = asyncHandler(async (req, res, next) => {
+  console.log('dddddd');
+  if (!req.user.profile_id) {
+    return next(
+      new ErrorResponse(
+        'you do not have profile, create profile and then create meetings',
+        401
+      )
+    );
+  }
+  let meetings = null;
+  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: -1 })
+  console.log(req.user._id, 'meetings', meetings);
+  if (meetings.length === 0 || meetings === null)
+    meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: -1 })
+
+  if (meetings.length === 0 || meetings === null)
+    return next(new ErrorResponse('no future meetings found', 401));
+  return successResponse(req, res, meetings);
+});
+
 // @desc    Get single meeting
 // @route   GET /api/meetings/:id
 // @access  Private with token
@@ -241,7 +262,7 @@ const createMeeting = asyncHandler(async (req, res, next) => {
     let options = tailoredActivities(unique);
     req.body.activities = setRandomActivities(options);
   }
-  req.body.date = new Date(req.body.date);
+  req.body.date = new Date(req.body.date).toISOString();
 
   let meeting = await Meeting.create(req.body);
 
@@ -381,6 +402,7 @@ const deleteMeeting = asyncHandler(async (req, res, next) => {
 module.exports = {
   getMeetings,
   getCustomActivities,
+  getFutureMeetings,
   getMeeting,
   createMeeting,
   updateMeeting,

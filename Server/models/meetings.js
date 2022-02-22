@@ -12,7 +12,7 @@ const meetingSchema = new mongoose.Schema({
 
   },
   date: {
-    type: String,
+    type: Date,
     required: [true, "Please add a date by -> new Date(y, m, d, h, m)"],
   },
   status: {

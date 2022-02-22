@@ -2,6 +2,13 @@ const users = [];
 //{userId, socketId, roomId, type}
 
 const addUser = (userId, socketId, roomId) => {
+  //when exists - replace his socket id to curr socket 
+  users.find((user) => {
+    if (user.userId === userId) {
+      user.socketId = socketId;
+      return;
+    }
+  });
   //add user to array only if he is not there
   !users.some((user) => user.userId === userId) &&
     users.push({ userId, socketId, roomId });
