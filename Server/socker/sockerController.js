@@ -7,8 +7,8 @@ const {
   getUsersInRoom,
 } = require('./users');
 
-// const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
-// const { angles_between_joints } = require('../syncAlgorithm/angles_between_joints');
+const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
+const { angles_between_joints } = require('../syncAlgorithm/angles_between_joints');
 
 const socker = (server) => {
   const io = require("socket.io")(server, {
@@ -93,7 +93,7 @@ const socker = (server) => {
       // sync algorutem will be in the sync modle controllers
       // sync_score = number between 0-1
       // }
-      let sync_score = null //procrustes_analysis(data);;
+      let sync_score = procrustes_analysis(data);;
       //save in db of both usesr 
 
 

@@ -31,7 +31,6 @@ const getMeetings = asyncHandler(async (req, res, next) => {
 });
 
 const getFutureMeetings = asyncHandler(async (req, res, next) => {
-  console.log('dddddd');
   if (!req.user.profile_id) {
     return next(
       new ErrorResponse(
@@ -41,10 +40,12 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
     );
   }
   let meetings = null;
-  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: -1 })
-  console.log(req.user._id, 'meetings', meetings);
+  let now = new Date();
+  console.log(now.getFullYear(), now.getMonth(), now.getDate());
+  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
+  //console.log(req.user._id, 'meetings', meetings);
   if (meetings.length === 0 || meetings === null)
-    meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: -1 })
+    meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
 
   if (meetings.length === 0 || meetings === null)
     return next(new ErrorResponse('no future meetings found', 401));
@@ -191,60 +192,6 @@ const createMeeting = asyncHandler(async (req, res, next) => {
       )
     );
   }
-
-  // let date = null;
-  // if (req.body.date) {
-  //   if (req.body.date.length != 5) {
-  //     return next(
-  //       ErrorResponse(
-  //         'the date must be array: [year, month, day, houre, minute]'
-  //       )
-  //     );
-  //   }
-  //   const year = req.body.date[0];
-  //   const month = req.body.date[1] - 1;
-  //   const day = req.body.date[2];
-  //   const hourse = req.body.date[3] + (3); // +3h for israel country
-  //   const mountes = req.body.date[4];
-  //   date = new Date(year, month, day, hourse, mountes);
-  // } else {
-  //   date = new Date();
-  // }
-
-  // //chack if the meeting reqested to crect dosent mauch with exixting meeting (10 min around the meething time)
-  // let meeting = await Meeting.findOne({
-  //   tariner: req.user._id,
-  //   $or: [
-  //     //same date and time
-  //     { date: date.toISOString() },
-  //     //date +10 min
-  //     { date: new Date(date.getTime() + 1 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 2 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 3 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 4 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 5 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 6 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 7 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 8 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 9 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() + 10 * 60 * 1000).toISOString() },
-  //     //date -10min
-  //     { date: new Date(date.getTime() - 1 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 2 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 3 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 4 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 5 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 6 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 7 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 8 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 9 * 60 * 1000).toISOString() },
-  //     { date: new Date(date.getTime() - 10 * 60 * 1000).toISOString() }
-  //   ]
-  // });
-  // if (meeting) {
-  //   return next(new ErrorResponse('choose another time, allrady has a meeting around this time'));
-  // }
-
   //update the profile of both users about the new meetings
   const participantUser = await User.findById(req.body.trainee);
   const participantProfile = await Profile.findById(participantUser.profile_id);
@@ -262,17 +209,13 @@ const createMeeting = asyncHandler(async (req, res, next) => {
     let options = tailoredActivities(unique);
     req.body.activities = setRandomActivities(options);
   }
-  req.body.date = new Date(req.body.date).toISOString();
+  req.body.date = new Date(req.body.date);
+  // console.log(req.body.date.getFullYear());
+  // console.log(req.body.date.getMonth());
+  // console.log(req.body.date.getDate());
+  // console.log(req.body.date.getTime());
 
   let meeting = await Meeting.create(req.body);
-
-  // meeting = await Meeting.create({
-  //   name: req.body.name,
-  //   users: [req.user._id, req.body.participant],
-  //   date: date.toISOString(),
-  //   list_activity_id: req.body.list_activity_id,
-  //   urlRoom: `http://localhost:3000/videochat/room=${room}`
-  // });
 
   await Profile.findByIdAndUpdate(myProfile._id, {
     $push: { meetings: meeting._id }

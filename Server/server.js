@@ -15,6 +15,14 @@ const xss = require('xss-clean');
 const cors = require('cors');
 const multer = require('multer')
 
+// const { shapeSimilarity } = require('./syncAlgorithm/step1/shapeSimilarity');
+// const curve1 = [{ x: 2, y: 1.5 }, { x: 4, y: 3 }];
+// const curve2 = [{ x: 2, y: 1.5 }, { x: 4, y: 3 }];
+// const similarity = shapeSimilarity(curve1, curve2);
+// console.log('====================================');
+// console.log('similarity', similarity);
+// console.log('====================================');
+
 // Load env vars
 dotenv.config({ path: './config/.env' });
 
