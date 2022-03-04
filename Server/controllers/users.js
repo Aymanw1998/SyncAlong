@@ -144,12 +144,12 @@ const loginUser = asyncHandler(async (req, res, next) => {
   } else {
     if (req.body.email)
       return next(
-        new ErrorResponse(`user not found by email of: ${req.body.email}`, 404)
+        new ErrorResponse(`user not found`, 404)
       );
     else if (req.body.username)
       return next(
         new ErrorResponse(
-          `user not found by username of: ${req.body.username}`,
+          `user not found`,
           404
         )
       );
@@ -160,6 +160,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/users/
 // @access  Private
 const updateUser = asyncHandler(async (req, res, next) => {
+  console.log('req.body', req.body);
   req.body.updateAt = Date.now();
   if (req.body.password) {
     //Defines the level of encryption
@@ -182,7 +183,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   } else {
     //TO DO - delete your trainees (if i have any defens if i alrady have profile)
     const profile = await Profile.findById(req.user.profile_id);
-    if(profile){
+    if (profile) {
       const trainerOf = profile.trainerOf;
       if (trainerOf.length > 0) {
         for (var i = 0; i < trainerOf.length; i++) {
@@ -220,7 +221,7 @@ const getAllTrainees = asyncHandler(async (req, res, next) => {
         400
       )
     );
-  } 
+  }
   if (req.user.role === 'trainee') {
     return next(
       new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
@@ -245,7 +246,7 @@ const getAllTrainees = asyncHandler(async (req, res, next) => {
 const getTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(new ErrorResponse(`Cannot create friend before create profile to your user`, 400));
-  } 
+  }
   else if (req.user.role === 'trainee') {
     return next(new ErrorResponse(`Cannot get friend becuse you are trainee`, 400));
   }
@@ -271,7 +272,7 @@ const createTrainee = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Cannot create friend before create profile to your user`, 402));
   }
   let userFriend = await createUser(req, res, next);
-  const data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: userFriend._id }});
+  const data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: userFriend._id } });
   if (userFriend) {
     return successResponse(req, res, userFriend);
   } else return next(new ErrorResponse(`failed to craete trainee user`, 400));
@@ -301,7 +302,7 @@ const updateTrainee = asyncHandler(async (req, res, next) => {
 // ****not tested****
 const deleteTrainee = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
-    return next( new ErrorResponse(`Cannot delete friend before create profile to your user`, 400));
+    return next(new ErrorResponse(`Cannot delete friend before create profile to your user`, 400));
   }
   const profile = await Profile.findById(req.user.profile_id);
   const trainerOf = profile.trainerOf;
@@ -333,7 +334,7 @@ const deleteTrainee = asyncHandler(async (req, res, next) => {
 const getMyTrainer = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
-      new ErrorResponse(`Cannot get you trainer before create profile to yourseif`,400));
+      new ErrorResponse(`Cannot get you trainer before create profile to yourseif`, 400));
   } else if (req.user.role === 'trainer') {
     return next(new ErrorResponse(`you are not trainee, you do not have trainer`, 400));
   }
@@ -437,7 +438,7 @@ module.exports = {
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  let token = createToken(user._id, user.email, user.username, user.role, user.profile_id, user.avatar);
+  let token = createToken(user._id, user.email, user.user, user.username, user.role, user.profile_id, user.avatar);
 
   const options = {
     expires: new Date(

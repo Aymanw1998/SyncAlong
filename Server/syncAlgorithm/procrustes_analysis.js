@@ -7,10 +7,6 @@
 const { shapeSimilarity } = require('curve-matcher');
 const { filter_poses_curr_action } = require('./filter_poses_curr_action');
 
-// const { arrLast } = require('./step1/utils');
-// const curve2 = [{ x: 2, y: 1.5, z: -1 }, { x: 4, y: 3, z: -1 }];
-// arrLast(curve2)
-
 const procrustes_analysis = (data) => {
     if (data.you.poses === undefined || data.me.poses === undefined) return; //iffff something wrong with passing data
     //filter peers by the curr activity and key poits

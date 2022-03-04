@@ -42,7 +42,7 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
   let meetings = null;
   let now = new Date();
   console.log(now.getFullYear(), now.getMonth(), now.getDate());
-  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
+  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
   //console.log(req.user._id, 'meetings', meetings);
   if (meetings.length === 0 || meetings === null)
     meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })

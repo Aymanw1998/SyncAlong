@@ -36,6 +36,8 @@ const getProfile = asyncHandler(async (req, res, next) => {
 const createProfile = asyncHandler(async (req, res, next) => {
   let profile = null;
 
+  console.log('req.body', req.body);
+
   if (req.user.profile_id) {
     profile = await Profile.findById(req.user.profile_id);
     if (profile && !req.params.id) {
