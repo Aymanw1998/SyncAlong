@@ -34,7 +34,9 @@ connectDB();
 
 //Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+
+//app.use(express.urlencoded({ extended: false }));
 app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 // Cookie parser when login user the token is saved in the server and send to http client

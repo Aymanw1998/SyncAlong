@@ -4,7 +4,8 @@
     link-info: https://en.wikipedia.org/wiki/Procrustes_analysis
 */}
 
-const { shapeSimilarity } = require('curve-matcher');
+//const { shapeSimilarity } = require('curve-matcher');
+const { shapeSimilarity } = require('./step1/shapeSimilarity');
 const { filter_poses_curr_action } = require('./filter_poses_curr_action');
 
 const procrustes_analysis = (data) => {

@@ -16,7 +16,7 @@ const profileSchema = new mongoose.Schema({
   age: { type: String },
   gender: { type: String },
   about: { type: String },
-  Hobbies: { type: String },
+  hobbies: { type: String },
 
   trainerOf: [
     {
