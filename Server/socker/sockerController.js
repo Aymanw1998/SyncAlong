@@ -81,18 +81,7 @@ const socker = (server) => {
 
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
     socket.on('sendOurPoses', (data) => {
-      {/*
-      me:{poses:[33][33][33][33]}},
-      you:{poses:[33][33][33][33][33][33]...}}.
-      activity: "hands-up",
-      time: "date now",
-      roomId: '1'
-*/}
-      //{
-      // do sync algoritem and retrn a number value....
-      // sync algorutem will be in the sync modle controllers
       // sync_score = number between 0-1
-      // }
       let sync_score = procrustes_analysis(data);;
       //save in db of both usesr 
 
@@ -101,13 +90,15 @@ const socker = (server) => {
       io.to(data.roomId).emit("syncScore", sync_score);
     });
 
-    //for hand marks and for a pop-up to user when his tainer set up a meeting with him
-    socket.on("sendNotification", ({ senderId, receiverId, type }) => {
-      const receiver = getUser(receiverId);
-      io.to(receiver.socketId).emit("getNotification", {
-        senderId,
-        type,
-      });
+    socket.on("sendNotification", (data) => {
+      let notification = data.notification;
+      console.log('notification', notification);
+      io.to(data.roomId).emit("notification", notification);
+    });
+
+    socket.on("peer1inFrame", (roomId) => {
+      console.log('peer1inFrame');
+      io.to(roomId).emit("peer1inFrame", roomId);
     });
 
     socket.on("disconnect", () => {
