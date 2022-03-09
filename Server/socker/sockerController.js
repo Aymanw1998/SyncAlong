@@ -91,7 +91,7 @@ const socker = (server) => {
     });
 
     socket.on("sendNotification", (data) => {
-      let notification =  data.notification;
+      let notification = data.notification;
       console.log('notification', notification);
       io.to(data.roomId).emit("notification", notification);
     });
