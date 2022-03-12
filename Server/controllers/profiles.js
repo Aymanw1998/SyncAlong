@@ -29,6 +29,28 @@ const getProfile = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, profile);
 });
 
+const getAllTraineesProfile = asyncHandler(async (req, res, next) => {
+  if (req.user.role === 'trainee') {
+    return next(
+      new ErrorResponse(`Cannot get friend becuse you are trainee`, 400)
+    );
+  }
+  const profile = await Profile.findById(req.user.profile_id);
+  let t = [];
+  if (profile.trainerOf?.length != 0) {
+    for (const i of profile.trainerOf) {
+      let trainee_user = await User.findById(i);
+      console.log(trainee_user);
+      if (trainee_user?.profile_id) {
+        const trainee_profile = await Profile.findById(trainee_user.profile_id);
+        t.push({ user: trainee_user, profile: trainee_profile })
+      }
+      return successResponse(req, res, t);
+    }
+  }
+  else return new ErrorResponse(`no profiles`, 404)
+});
+
 
 // @desc    Create new profile
 // @route   POST /api/profiles/
@@ -243,6 +265,7 @@ const updateTraineeProfile = asyncHandler(async (req, res, next) => {
 
 module.exports = {
   getProfiles,
+  getAllTraineesProfile,
   getProfile,
   createProfile,
   updateProfile,

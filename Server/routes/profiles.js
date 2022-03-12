@@ -3,6 +3,7 @@ const { protect } = require('../middleware/auth');
 
 const { getProfiles, getProfile, createProfile, updateProfile, deleteProfile,
       getTraineeProfile, createTraineeProfile, updateTraineeProfile, deleteTraineeProfile,
+      getAllTraineesProfile,
 } = require('../controllers/profiles');
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router
       .post(protect, createProfile)
       .put(protect, updateProfile)
       .delete(protect, deleteProfile);
+router
+      .route('/trinees/all')
+      .get(protect, getAllTraineesProfile)
 router
       .route('/trainee/:id')
       .get(protect, getTraineeProfile)
