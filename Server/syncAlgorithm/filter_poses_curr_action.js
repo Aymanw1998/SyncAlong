@@ -34,7 +34,7 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
     // console.log('pose_peer1[0]', pose_peer1[0]);
 
 
-    if (in_upper && in_bottom) { //activity in all body parts 
+    if ((in_upper && in_bottom) || (!in_upper && !in_bottom)) { //activity in all body parts 
         let all_parts = [];
         all_parts.push(...upper_part.left_hand)
         all_parts.push(...upper_part.right_hand)

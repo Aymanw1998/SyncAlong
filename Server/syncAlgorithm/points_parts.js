@@ -15,8 +15,21 @@ const bottom_part = {
 }
 
 //add activitys as gos.....
-const upper_activities = ['hands', 'swing-hands', 'right-hand-up', 'sholders', 'elbow', 'wrist']
-const bottom_activities = ['legs', 'hip', 'ankle', 'knee']
+const upper_activities = [
+    'hands', 'swing-hands', 'right-hand-up', 'sholders',
+    'elbow', 'wrist',
+    'hands-x', 'hands-y', 'swim-hands',
+
+    //all of the body - must be in both upper&lower
+    'gamp', 'open-close',
+]
+const bottom_activities = [
+    'legs', 'hip', 'ankle', 'knee',
+    'left-leg-up', 'right-leg-up', 'legs-bouth-up', 'legs-gumping',
+
+    //all of the body - must be in both upper&lower
+    'gamp', 'open-close',
+]
 
 const center_part = [11, 12, 23, 24];
 const joints_keys = [13, 14, 25, 26]; //13:right-hand, 14:left-hand, 25:right-leg, 26:left-leg

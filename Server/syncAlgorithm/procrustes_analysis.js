@@ -4,7 +4,6 @@
     link-info: https://en.wikipedia.org/wiki/Procrustes_analysis
 */}
 
-//const { shapeSimilarity } = require('curve-matcher');
 const { shapeSimilarity } = require('./step1/shapeSimilarity');
 const { filter_poses_curr_action } = require('./filter_poses_curr_action');
 
@@ -26,7 +25,12 @@ const procrustes_analysis = (data) => {
         curve_me_elment1 = data.me.poses[i];
         curve_you_elment1 = data.you.poses[i];
 
-        similarity = shapeSimilarity(curve_me_elment1, curve_you_elment1);
+        //when one of users part isnt in the praim the the sync bettwn them is none == 0 
+        if (data.me.poses[i].visibility <= 0.6 || data.you.poses[i].visibility <= 0.6)
+            similarity = 0;
+        else
+            similarity = shapeSimilarity(curve_me_elment1, curve_you_elment1);
+
         sum = sum + similarity;
         console.log(i, ' procrustes_analysis', similarity, 'sum:', sum);
     }
