@@ -7,13 +7,24 @@
 const { bottom_part, upper_part, bottom_activities, upper_activities } = require('./points_parts');
 
 const filterByKeyPoints = (pose_peer, parts) => {
+    //console.log("pose_peer", pose_peer, 'parts: ', parts);
+    let is_null_arr = pose_peer.find(el => el === null);
+    if (is_null_arr) {
+        console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
+        return null;
+    }
+
     let result = [];
     let poses = [];
-    for (const i in pose_peer) {
+    for (const i in pose_peer) { // [ [],[],[], null ]
         result = [];
+        if (pose_peer[i] === null) {
+            console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
+            return null;
+        }
         for (const j in parts) {
             let index = parts[j];
-            //console.log(index, 'peer', pose_peer[i][index]);
+            //console.log(index, i, 'peer');
             result.push(pose_peer[i][index]);
         }
         poses.push(result);
@@ -77,8 +88,10 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_legs);
     }
 
-    let me = { poses: filtered_pose1 }
-    let you = { poses: filtered_pose2 }
+    let me = filtered_pose1 ? { poses: filtered_pose1 } : null
+    let you = filtered_pose2 ? { poses: filtered_pose2 } : null
+
+    if (!me || !you) return null;
     return { me, you }; //return filtered poses 
 }
 

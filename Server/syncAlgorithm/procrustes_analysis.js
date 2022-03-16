@@ -3,14 +3,21 @@
     bacied Procrustes analysis.
     link-info: https://en.wikipedia.org/wiki/Procrustes_analysis
 */}
-
 const { shapeSimilarity } = require('./step1/shapeSimilarity');
 const { filter_poses_curr_action } = require('./filter_poses_curr_action');
+
 
 const procrustes_analysis = (data) => {
     if (data.you.poses === undefined || data.me.poses === undefined) return; //iffff something wrong with passing data
     //filter peers by the curr activity and key poits
+    //console.log('data.me.poses', data.me.poses);
+    //console.log(' data.you.poses', data.you.poses);
     data = filter_poses_curr_action(data.activity, data.me.poses, data.you.poses);
+
+    //In case not all points passed from client to server in the expected manner and some received null
+    // e.g : you.data: [[{},{},{}], [{},{},{}], null,null.[],[],null, null]
+    if (!data) return; //doest chacks this minit
+
     //case me:[4] you:[6] -> shorterLen in size 4.
     let shortestType, shortestArr;
     let sum = 0;
