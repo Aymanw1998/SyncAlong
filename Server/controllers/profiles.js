@@ -40,13 +40,12 @@ const getAllTraineesProfile = asyncHandler(async (req, res, next) => {
   if (profile.trainerOf?.length != 0) {
     for (const i of profile.trainerOf) {
       let trainee_user = await User.findById(i);
-      console.log(trainee_user);
       if (trainee_user?.profile_id) {
         const trainee_profile = await Profile.findById(trainee_user.profile_id);
         t.push({ user: trainee_user, profile: trainee_profile })
       }
-      return successResponse(req, res, t);
     }
+    return successResponse(req, res, t);
   }
   else return new ErrorResponse(`no profiles`, 404)
 });

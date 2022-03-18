@@ -30,6 +30,20 @@ const getMeetings = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, meetings);
 });
 
+//filter to get the meeting thet are in the futcer 
+const machDates = (date, now) => {
+  if (date.getDate() == now.getDate()) {
+    console.log('date.getDate()', date.getDate());
+    if (date.getHours() - 2 < now.getHours()) { //-2 becose if z indwx in date
+      return false;
+    }
+    else if (date.getHours() - 2 == now.getHours() && date.getMinutes() < now.getMinutes()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 const getFutureMeetings = asyncHandler(async (req, res, next) => {
   if (!req.user.profile_id) {
     return next(
@@ -43,13 +57,15 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
   let now = new Date();
   console.log(now.getFullYear(), now.getMonth(), now.getDate());
   meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
-  //console.log(req.user._id, 'meetings', meetings);
   if (meetings.length === 0 || meetings === null)
     meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
 
   if (meetings.length === 0 || meetings === null)
-    return next(new ErrorResponse('no future meetings found', 401));
-  return successResponse(req, res, meetings);
+    return successResponse(req, res, null);
+  else {
+    meetings = meetings.filter(i => machDates(i.date, now))
+    return successResponse(req, res, meetings);
+  }
 });
 
 // @desc    Get single meeting
