@@ -20,10 +20,10 @@ const getMeetings = asyncHandler(async (req, res, next) => {
     );
   }
   let meetings = null;
-  meetings = await Meeting.find({ tariner: req.user._id }).populate('tariner trainee', '_id user role').sort({ date: -1 })
+  meetings = await Meeting.find({ tariner: req.user._id }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
   console.log(req.user._id, 'meetings', meetings.length);
   if (meetings.length === 0 || meetings === null)
-    meetings = await Meeting.find({ trainee: req.user._id }).populate('tariner trainee', '_id user role').sort({ date: -1 })
+    meetings = await Meeting.find({ trainee: req.user._id }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
 
   if (meetings.length === 0 || meetings === null)
     return next(new ErrorResponse('no meetings found by user id', 401));
@@ -55,10 +55,11 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
   let meetings = null;
   let now = new Date();
   // console.log(now.getFullYear(), now.getMonth(), now.getDate());
-  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
-  if (meetings.length === 0 || meetings === null)
-    meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1) } }).populate('tariner trainee', '_id user role').sort({ date: 1 })
-
+  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+  if (meetings.length === 0 || meetings === null) {
+    console.log('in trainee');
+    meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+  }
   if (meetings.length === 0 || meetings === null)
     return successResponse(req, res, null);
   else {
@@ -72,6 +73,19 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const getMeeting = asyncHandler(async (req, res, next) => {
   const meeting = await Meeting.findById(req.params.id);
+  return successResponse(req, res, meeting);
+});
+
+const getActiveMeeting = asyncHandler(async (req, res, next) => {
+  let meeting = null;
+  console.log('req.user.role ', req.user.role);
+  if (req.user.role === 'trainer')
+    meeting = await Meeting.find({ tariner: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+  else  //console.log('in trainee');
+    meeting = await Meeting.find({ trainee: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+
+  if (meeting === null || meeting.length === 0)
+    return next(new ErrorResponse('No ACTIVE meeting', 401));
   return successResponse(req, res, meeting);
 });
 
@@ -246,98 +260,15 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/meetings/:name
 // @access  Private with token
 const updateMeeting = asyncHandler(async (req, res, next) => {
-  //body: name, trainee(id), date(no must), room (name/id)
-  //date : [y, m, d, h, m]
-  let meeting = await Meeting.findOne({ name: req.params.name });
+  let meeting = null;
+  console.log('req.user.role ', req.user.role);
+  if (req.user.role === 'trainer')
+    meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
+  else  //console.log('in trainee');
+    return next(new ErrorResponse('trainee cant do update... sorry', 401));
 
-  if (!meeting) {
-    return next(
-      new ErrorResponse(
-        `the meeting with name: [${req.params.name}] is not exist`,
-        401
-      )
-    );
-  }
-  if (req.body.participant) {
-    if (!meeting.users.includes(req.body.participant)) {
-      const myProfile = await Profile.findById(req.user.profile_id);
-      let isAuthorize = await authorize(req.body.participant, myProfile.trainerOf);
-      if (!isAuthorize) {
-        return next(new ErrorResponse(`User is not authorize, choose another participant or just keep with old participant`, 403));
-      }
-      else {
-        for (let i = 0; i < meeting.users.length; i++) {
-          if (meeting.users[i] != req.user._id) {
-            let user = User.findById(meeting.users[i]);
-            let data = Profile.findByIdAndUpdate(user.profile_id, { $pull: { meetings: meeting._id } });
-            meeting.users.splice(i, 1); // delete old participant
-            meeting.users.push(req.body.participant);
-            user = User.findById(req.body.participant);
-            data = Profile.findByIdAndUpdate(user.profile_id, { $pull: { meetings: meeting._id } });
-
-            data = Meeting.findByIdAndUpdate(meeting._id, { users: meeting.users });
-          }
-        }
-      }
-    }
-  }
-  let date = null;
-  if (req.body.date) {
-    if (req.body.date.length != 5) {
-      return next(
-        ErrorResponse(
-          'the date must be array: [year, month, day, houre, minute]'
-        )
-      );
-    }
-    const year = req.body.date[0];
-    const month = req.body.date[1] - 1;
-    const day = req.body.date[2];
-    const hourse = req.body.date[3] + (3); // +3h for israel country
-    const mountes = req.body.date[4];
-    date = new Date(year, month, day, hourse, mountes);
-    //20-4-2023 1:25
-    let meetingT = await Meeting.findOne({
-      $or: [
-        //same date and time
-        { date: date.toISOString() },
-        //date +10 min
-        { date: new Date(date.getTime() + 1 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 2 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 3 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 4 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 5 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 6 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 7 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 8 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 9 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() + 10 * 60 * 1000).toISOString() },
-        //date -10min
-        { date: new Date(date.getTime() - 1 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 2 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 3 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 4 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 5 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 6 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 7 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 8 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 9 * 60 * 1000).toISOString() },
-        { date: new Date(date.getTime() - 10 * 60 * 1000).toISOString() }
-      ]
-    });
-    if (meetingT) {
-      return next(new ErrorResponse('choose another time'));
-    }
-  }
-
-  let data = await Meeting.findByIdAndUpdate(meeting._id, {
-    date: date.toISOString(),
-    list_activity_id: req.body.list_activity_id
-  });
-
-  meeting = await Meeting.findOne({ name: req.params.name });
-  return successResponse(req, res, meeting);
-
+  if (!meeting) return new ErrorResponse(`faild to update`, 401)
+  return successResponse(req, res, 'update done!');
 });
 
 // @desc    Delete meeting
@@ -364,5 +295,6 @@ module.exports = {
   getMeeting,
   createMeeting,
   updateMeeting,
-  deleteMeeting
+  deleteMeeting,
+  getActiveMeeting
 };

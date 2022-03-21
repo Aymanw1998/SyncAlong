@@ -9,7 +9,8 @@ const {
   updateMeeting,
   deleteMeeting,
   getCustomActivities,
-  getFutureMeetings
+  getFutureMeetings,
+  getActiveMeeting,
 } = require('../controllers/meetings');
 
 router
@@ -27,5 +28,8 @@ router
 router
   .route('/ouractivities/:id') //traniee id
   .get(protect, getCustomActivities)
+router
+  .route('/meeting/active') //traniee id
+  .get(protect, getActiveMeeting)
 
 module.exports = router;

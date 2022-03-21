@@ -82,7 +82,9 @@ const socker = (server) => {
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
     socket.on('sendOurPoses', (data) => {
       // sync_score = number between 0-1
+      //  console.log('befor sync algorithem ', new Date());
       let sync_score = procrustes_analysis(data);
+      // console.log('after sync algorithem ', new Date());
       //let sync_angals = angles_between_joints(data);
       //save in db of both usesr 
 
