@@ -72,15 +72,15 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_hands);
     }
 
-    else if (bottom_part && curr_activity.includes("left")) {
+    else if (in_bottom && curr_activity.includes("left")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.left_leg);
     }
-    else if (bottom_part && curr_activity.includes("right")) {
+    else if (in_bottom && curr_activity.includes("right")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.right_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.right_leg);
     }
-    else if (bottom_part && !curr_activity.includes("right") && !curr_activity.includes("left")) {
+    else if (in_bottom && !curr_activity.includes("right") && !curr_activity.includes("left")) {
         let both_legs = []
         both_legs.push(...bottom_part.left_leg)
         both_legs.push(...bottom_part.right_leg)
