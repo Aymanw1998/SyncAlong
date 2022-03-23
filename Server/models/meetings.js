@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const meetingSchema = new mongoose.Schema({
+  title: {
+    type: String
+  },
   tariner: { //trainer need fixing text error.
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'

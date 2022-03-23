@@ -207,6 +207,7 @@ const setRandomActivities = (options) => {
 // @route   POST /api/meetings/
 // @access  Private with token
 const createMeeting = asyncHandler(async (req, res, next) => {
+  console.log('req.body create', req.body);
   //body: name, trainee(id), date(no must), room (name/id)
   //date : [y, m, d, h, m]
   //when calling creact -MUSt do a call for getCustomActivities fist - from that the user chose the activityies
@@ -238,11 +239,17 @@ const createMeeting = asyncHandler(async (req, res, next) => {
     let options = tailoredActivities(unique);
     req.body.activities = setRandomActivities(options);
   }
-  req.body.date = new Date(req.body.date);
+
+  // req.body.date = new Date(req.body.date);
+  let myDate = new Date(req.body.date);
+  let trut_date = new Date(myDate.getFullYear(), myDate.getMonth(), myDate.getDate(), myDate.getHours() + 3, myDate.getMinutes())
+
+  req.body.date = trut_date;
   // console.log(req.body.date.getFullYear());
   // console.log(req.body.date.getMonth());
   // console.log(req.body.date.getDate());
   // console.log(req.body.date.getTime());
+  //console.log(req.body.date.getHours());
 
   let meeting = await Meeting.create(req.body);
 
@@ -262,10 +269,10 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 const updateMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
   console.log('req.user.role ', req.user.role);
-  if (req.user.role === 'trainer')
-    meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
-  else  //console.log('in trainee');
-    return next(new ErrorResponse('trainee cant do update... sorry', 401));
+  // if (req.user.role === 'trainer')
+  meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
+  // else  //console.log('in trainee');
+  //   return next(new ErrorResponse('trainee cant do update... sorry', 401));
 
   if (!meeting) return new ErrorResponse(`faild to update`, 401)
   return successResponse(req, res, 'update done!');
@@ -275,17 +282,16 @@ const updateMeeting = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/meetings/:name
 // @access  Private with token
 const deleteMeeting = asyncHandler(async (req, res, next) => {
-  const meeting = await Meeting.findOne({ name: req.params.name });
-  meeting.users.map(userId => {
-    const user = User.findById(userId);
-    let data = Profile.findByIdAndUpdate(user.profile_id, { $pull: { meetings: meeting._id } });
-  });
-  Meeting.deleteOne({ name: req.params.name }, (err, data) => {
-    if (err) {
-      return next(new ErrorResponse(`delete failed`, 400));
-    }
-    return successResponse(req, res, data);
-  });
+  console.log(req.params.id);
+  let meeting = null;
+  console.log('req.user.role ', req.user.role);
+  if (req.user.role === 'trainer')
+    meeting = await Meeting.deleteOne({ _id: req.params.id });
+  else  //console.log('in trainee');
+    return next(new ErrorResponse('trainee cant do delete... sorry', 401));
+
+  if (!meeting) return new ErrorResponse(`faild to delete`, 401)
+  return successResponse(req, res, 'delted one!');
 });
 
 module.exports = {
