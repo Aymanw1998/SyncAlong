@@ -32,11 +32,14 @@ const getMeetings = asyncHandler(async (req, res, next) => {
 
 //filter to get the meeting thet are in the futcer 
 const machDates = (date, now) => {
+  // console.log('now', now);
+  // console.log('date', date);
+
   if (date.getDate() == now.getDate()) {
-    if (date.getHours() - 2 < now.getHours()) { //-2 becose if z indwx in date
+    if (date.getHours() < now.getHours()) { //-2 becose if z indwx in date
       return false;
     }
-    else if (date.getHours() - 2 == now.getHours() && date.getMinutes() < now.getMinutes()) {
+    else if (date.getHours() == now.getHours() && date.getMinutes() < now.getMinutes()) {
       return false;
     }
   }
@@ -55,7 +58,7 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
   let meetings = null;
   let now = new Date();
   // console.log(now.getFullYear(), now.getMonth(), now.getDate());
-  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+  meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
   if (meetings.length === 0 || meetings === null) {
     console.log('in trainee');
     meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
