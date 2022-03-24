@@ -3,28 +3,24 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const syncscoreSchema = new mongoose.Schema({
-  id: {
-    type: 'string',
-    index: true,
-    required: true
-  },
-  poses_id: {
+  meeting_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'poses',
+    ref: 'meetings',
   },
-  users: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'users',
-    required: true
-  }],
   result: {
-    type: String, 
+    type: String,
     required: true
+  },
+  time: {
+    type: String,
+  },
+  activity: {
+    type: String,
   },
   createdAt: {
-      type: Date,
-      default: Date.now
-  },  
+    type: Date,
+    default: Date.now
+  },
 });
 
 

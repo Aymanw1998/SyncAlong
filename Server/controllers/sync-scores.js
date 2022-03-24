@@ -15,15 +15,15 @@ const getAllSyncScores = asyncHandler(async (req, res, next) => {
 // @route   GET /api/syncscores/
 // @access  Public
 const getSyncScores = asyncHandler(async (req, res, next) => {
-    const syncscores = await SyncScore.find({participants: user._id});
-    return successResponse(req, res, { syncscores });
+  const syncscores = await SyncScore.find({ participants: user._id });
+  return successResponse(req, res, { syncscores });
 });
 
 // @desc    Get single syncscore
 // @route   GET /api/syncscores/:id
 // @access  Private with token
 const getSyncScore = asyncHandler(async (req, res, next) => {
-  const syncscore = await SyncScore.findOne({id: req.params.id});
+  const syncscore = await SyncScore.findOne({ id: req.params.id });
   return successResponse(req, res, { syncscore });
 });
 
@@ -56,10 +56,10 @@ const deleteSyncScore = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
-    getAllSyncScores,
-    getSyncScores,
-    getSyncScore,
-    createSyncScore,
-    updateSyncScore,
-    deleteSyncScore,
+  getAllSyncScores,
+  getSyncScores,
+  getSyncScore,
+  createSyncScore,
+  updateSyncScore,
+  deleteSyncScore,
 }

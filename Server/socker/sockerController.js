@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const { SyncScore } = require('../models/sync-scores');
 
 const {
   addUser, getUsers, joinUser,
@@ -80,16 +81,19 @@ const socker = (server) => {
     })
 
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
-    socket.on('sendOurPoses', (data) => {
+    socket.on('sendOurPoses', async (data) => {
       // sync_score = number between 0-1
       //  console.log('befor sync algorithem ', new Date());
       let sync_score = procrustes_analysis(data);
       // console.log('after sync algorithem ', new Date());
-      //let sync_angals = angles_between_joints(data);
-      //save in db of both usesr 
-
+      //let sync_angals = angles_between_joints(data)
       //send back to bouth in room
       io.to(data.roomId).emit("syncScore", sync_score);
+
+      //save in db of both usesr
+      let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
+      const syncscore = await SyncScore.create(dataToDB);
+      if (!syncscore) return;
     });
 
     socket.on("sendNotification", (data) => {
@@ -101,6 +105,12 @@ const socker = (server) => {
     socket.on("peer1inFrame", (roomId) => {
       console.log('peer1inFrame');
       io.to(roomId).emit("peer1inFrame", roomId);
+    });
+
+    socket.on("t", (yourSocketId) => {
+      console.log('t', yourSocketId);
+      let id = true
+      io.to(yourSocketId).emit("t", id);
     });
 
     socket.on("disconnect", () => {

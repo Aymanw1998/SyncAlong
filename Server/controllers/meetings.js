@@ -241,6 +241,7 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   }
 
   req.body.date = new Date(req.body.date);
+
   // let myDate = new Date(req.body.date);
   // let trut_date = new Date(myDate.getFullYear(), myDate.getMonth(), myDate.getDate(), myDate.getHours() + 3, myDate.getMinutes())
   // req.body.date = trut_date;
