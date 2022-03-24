@@ -68,6 +68,12 @@ const socker = (server) => {
       io.to(userToCall).emit("callUser", { signal: signalData, from, name });
     });
 
+    socket.on("calltoTrainee", yourSocketId => {
+      console.log('calltoTrainee');
+      let data = true;
+      io.to(yourSocketId).emit("calltoTrainee", data);
+    });
+
     socket.on("ourDelay", data => {
       io.to(data.to).emit("ourDelay", data.delay);
     });
