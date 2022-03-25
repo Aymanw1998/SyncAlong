@@ -15,12 +15,11 @@ router
     .route('/All')
     .get(getAllSyncScores)
 router
-  .route('/')
-  .get(protect, getSyncScores)
-  .put(protect, createSyncScore);
+    .route('/')
+    .put(protect, createSyncScore);
 router
-    .route('/:id')
-    .get(protect, getSyncScore)
+    .route('/:id') //id of meeting
+    .get(protect, getSyncScores)
     .put(protect, updateSyncScore)
     .delete(protect, deleteSyncScore);
 

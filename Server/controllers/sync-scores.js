@@ -15,7 +15,7 @@ const getAllSyncScores = asyncHandler(async (req, res, next) => {
 // @route   GET /api/syncscores/
 // @access  Public
 const getSyncScores = asyncHandler(async (req, res, next) => {
-  const syncscores = await SyncScore.find({ participants: user._id });
+  const syncscores = await SyncScore.find({ meeting_id: req.params.id }).populate('meeting_id', 'title tariner trainee date status').sort({ time: -1 })
   return successResponse(req, res, { syncscores });
 });
 
