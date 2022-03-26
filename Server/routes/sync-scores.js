@@ -19,7 +19,7 @@ router
     .put(protect, createSyncScore);
 router
     .route('/:id') //id of meeting
-    .get(protect, getSyncScores)
+    .get(getSyncScores)
     .put(protect, updateSyncScore)
     .delete(protect, deleteSyncScore);
 

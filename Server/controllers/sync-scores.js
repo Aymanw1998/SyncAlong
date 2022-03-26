@@ -15,8 +15,12 @@ const getAllSyncScores = asyncHandler(async (req, res, next) => {
 // @route   GET /api/syncscores/
 // @access  Public
 const getSyncScores = asyncHandler(async (req, res, next) => {
-  const syncscores = await SyncScore.find({ meeting_id: req.params.id }).populate('meeting_id', 'title tariner trainee date status').sort({ time: -1 })
-  return successResponse(req, res, { syncscores });
+  console.log('Hi');
+  const syncscores = await SyncScore.find({ meeting_id: req.params.id })
+    .populate('meeting_id', 'title tariner trainee date activities')
+    .sort({ time: -1 });
+  console.log(syncscores);
+  return successResponse(req, res, syncscores);
 });
 
 // @desc    Get single syncscore
@@ -61,5 +65,5 @@ module.exports = {
   getSyncScore,
   createSyncScore,
   updateSyncScore,
-  deleteSyncScore,
-}
+  deleteSyncScore
+};

@@ -91,13 +91,15 @@ const socker = (server) => {
       // sync_score = number between 0-1
       //  console.log('befor sync algorithem ', new Date());
       let sync_score = procrustes_analysis(data);
+      console.log("sync_score", sync_score);
       // console.log('after sync algorithem ', new Date());
       //let sync_angals = angles_between_joints(data)
       //send back to bouth in room
       io.to(data.roomId).emit("syncScore", sync_score);
 
       //save in db of both usesr
-      let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
+      if (sync_score === undefined || sync_score == null) return;
+      let dataToDB = { meeting_id: data.roomId, result:sync_score, time: data.time, activity: data.activity }
       const syncscore = await SyncScore.create(dataToDB);
       if (!syncscore) return;
     });
