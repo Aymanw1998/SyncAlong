@@ -99,7 +99,7 @@ const socker = (server) => {
 
       //save in db of both usesr
       if (sync_score === undefined || sync_score == null) return;
-      let dataToDB = { meeting_id: data.roomId, result:sync_score, time: data.time, activity: data.activity }
+      let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
       const syncscore = await SyncScore.create(dataToDB);
       if (!syncscore) return;
     });
@@ -110,9 +110,9 @@ const socker = (server) => {
       io.to(data.roomId).emit("notification", notification);
     });
 
-    socket.on("peer1inFrame", (roomId) => {
+    socket.on("peer1inFrame", (yourSocketId) => {
       console.log('peer1inFrame');
-      io.to(roomId).emit("peer1inFrame", roomId);
+      io.to(yourSocketId).emit("peer1inFrame", yourSocketId);
     });
 
     socket.on("t", (yourSocketId) => {

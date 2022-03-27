@@ -1,27 +1,23 @@
 const activities = {
   arms: [
-    'left heand up-down on y-axis',
-    'right heand up-down on y-axis',
-    'both heands up-down on y-axis',
-    'both heands close-open on x-axis',
-    'left heand bending at angles 180to0 on x-axis',
-    'right heand bending at angles 180to0 on x-axis',
-    'both heands rotation on x-axis'
-  ],
-  abdomen: ['squats', 'crunches'],
+    'hands-x', 'hands-y', 'swim-hands', 'swing-hands',
+    "left-hand-up", "right-hand-up", 'crazy',],
+  abdomen: ['poshup', 'baly-run', 'baly-legs'],
   legs_knees: [
-    'shoulders to the sides of the body and legs to bend 90 degrees',
-    'lift right leg on Y-axis up-down',
-    'lift left leg on Y-axis up-down',
-    'lift right leg on Y-axis and rotatian for x-axis',
-    'lift left leg on Y-axis and rotatian for x-axis',
+    'left-leg-up', 'right-leg-up', 'legs-both-up',
+    '90leging-right', '90leging-left'
   ],
   lower_back: [
-    'center body area and upper-body moves to right-left side on X-axis',
+    'back-down', 'toch-flor'
   ],
   upper_back: [
-    'stretching hands up 90 degrees without moving',
+    'claping', 'all-up-1'
   ],
+  allbody: [
+    'gamp', 'legs-gumping', 'open-close',
+    'kicks', 'pray', 'right-all', 'up-dwon-both',
+    'gump-sides', 'zomba'
+  ]
 }
 
 module.exports = {
