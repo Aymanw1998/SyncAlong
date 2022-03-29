@@ -7,7 +7,6 @@
 const { bottom_part, upper_part, bottom_activities, upper_activities } = require('./points_parts');
 
 const filterByKeyPoints = (pose_peer, parts) => {
-    //console.log("pose_peer", pose_peer, 'parts: ', parts);
     let is_null_arr = pose_peer.find(el => el === null);
     if (is_null_arr) {
         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
@@ -39,6 +38,9 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
 
     let filtered_pose1 = [];
     let filtered_pose2 = [];
+    let filtered_pose_1 = [];
+    let filtered_pose_2 = [];
+    let is_all_body = false;
 
     // console.log('22', in_upper, in_bottom, curr_activity, curr_activity.includes("right"));
     // console.log('pose_peer1[11]', pose_peer1[11]); //aray of arrys 0:[{}{}{}{}].len=33
@@ -46,14 +48,20 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
 
 
     if ((in_upper && in_bottom) || (!in_upper && !in_bottom)) { //activity in all body parts 
-        let all_parts = [];
-        all_parts.push(...upper_part.left_hand)
-        all_parts.push(...upper_part.right_hand)
-        all_parts.push(...bottom_part.left_leg)
-        all_parts.push(...bottom_part.left_leg)
+        is_all_body = true;
+        let all_parts_bottom = [];
+        let all_parts_upper = [];
+        all_parts_upper.push(...upper_part.left_hand)
+        all_parts_upper.push(...upper_part.right_hand)
+        all_parts_bottom.push(...[27]);
+        all_parts_bottom.push(...[28])
+        // all_parts.push(...[bottom_part.left_leg])
+        //  all_parts.push(...bottom_part.right_leg)
 
-        filtered_pose1 = filterByKeyPoints(pose_peer1, all_parts);
-        filtered_pose2 = filterByKeyPoints(pose_peer2, all_parts);
+        filtered_pose1 = filterByKeyPoints(pose_peer1, all_parts_bottom);
+        filtered_pose2 = filterByKeyPoints(pose_peer2, all_parts_bottom);
+        filtered_pose_1 = filterByKeyPoints(pose_peer1, all_parts_upper);
+        filtered_pose_2 = filterByKeyPoints(pose_peer2, all_parts_upper);
     }
     else if (in_upper && curr_activity.includes("left")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, upper_part.left_hand);
@@ -72,26 +80,34 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_hands);
     }
 
-    else if (in_bottom && curr_activity.includes("left")) {
+    else if (bottom_part && curr_activity.includes("left")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.left_leg);
     }
-    else if (in_bottom && curr_activity.includes("right")) {
+    else if (bottom_part && curr_activity.includes("right")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.right_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.right_leg);
     }
-    else if (in_bottom && !curr_activity.includes("right") && !curr_activity.includes("left")) {
+    else if (bottom_part && !curr_activity.includes("right") && !curr_activity.includes("left")) {
         let both_legs = []
-        both_legs.push(...bottom_part.left_leg)
-        both_legs.push(...bottom_part.right_leg)
+        // both_legs.push(...bottom_part.left_leg)
+        // both_legs.push(...bottom_part.right_leg)
+        both_legs.push(...[27]);
+        both_legs.push(...[28])
         filtered_pose1 = filterByKeyPoints(pose_peer1, both_legs);
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_legs);
     }
 
     let me = filtered_pose1 ? { poses: filtered_pose1 } : null
     let you = filtered_pose2 ? { poses: filtered_pose2 } : null
+    let me_upper = filtered_pose_1 ? { poses: filtered_pose_1 } : null
+    let you_upper = filtered_pose_2 ? { poses: filtered_pose_2 } : null
 
     if (!me || !you) return null;
+    if (is_all_body) {
+        if (!me_upper || !you_upper) return null;
+        return { me, you, me_upper, you_upper };
+    }
     return { me, you }; //return filtered poses 
 }
 

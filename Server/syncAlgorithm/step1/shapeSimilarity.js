@@ -33,7 +33,7 @@ let options = {
 const shapeSimilarity = (
   curve1,
   curve2,
-  options //: ShapeSimilarityOpts = {}
+  options
 ) => {
   if (Math.abs(restrictRotationAngle) > Math.PI) {
     throw new Error('restrictRotationAngle cannot be larger than PI');
