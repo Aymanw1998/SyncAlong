@@ -15,7 +15,6 @@ const getAllSyncScores = asyncHandler(async (req, res, next) => {
 // @route   GET /api/syncscores/
 // @access  Public
 const getSyncScores = asyncHandler(async (req, res, next) => {
-  console.log('Hi');
   const syncscores = await SyncScore.find({ meeting_id: req.params.id })
     .populate('meeting_id', 'title tariner trainee date activities')
     .sort({ time: -1 });
@@ -35,6 +34,7 @@ const getSyncScore = asyncHandler(async (req, res, next) => {
 // @route   POST /api/syncscores/
 // @access  Private with token
 const createSyncScore = asyncHandler(async (req, res, next) => {
+  console.log('create sync')
   const syncscore = await SyncScore.create(req.body);
   return successResponse(req, res, syncscore);
 });

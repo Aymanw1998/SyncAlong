@@ -89,10 +89,7 @@ const socker = (server) => {
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
     socket.on('sendOurPoses', async (data) => {
       // sync_score = number between 0-1
-      //  console.log('befor sync algorithem ', new Date());
       let sync_score = procrustes_analysis(data);
-      //console.log("sync_score", sync_score);
-      // console.log('after sync algorithem ', new Date());
 
       let d = {
         me: { poses: [{ x: 2, y: 1.5 }, { x: 4, y: 3 }] },
@@ -104,10 +101,9 @@ const socker = (server) => {
       io.to(data.roomId).emit("syncScore", sync_score);
 
       //save in db of both usesr
-      // if (sync_score === undefined || sync_score == null) return;
-      // let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
-      // const syncscore = await SyncScore.create(dataToDB);
-      // if (!syncscore) return;
+      if (sync_score === undefined || sync_score == null) return;
+      let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
+      const syncscore = await SyncScore.create(dataToDB);
     });
 
     socket.on("sendNotification", (data) => {
@@ -125,6 +121,10 @@ const socker = (server) => {
       console.log('t', yourSocketId);
       let id = true
       io.to(yourSocketId).emit("t", id);
+    });
+
+    socket.on("error", (err) => {
+      console.log(`Error socket server: ${err}`);
     });
 
     socket.on("disconnect", () => {
