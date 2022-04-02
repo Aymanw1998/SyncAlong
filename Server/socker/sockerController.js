@@ -91,17 +91,23 @@ const socker = (server) => {
       // sync_score = number between 0-1
       //  console.log('befor sync algorithem ', new Date());
       let sync_score = procrustes_analysis(data);
-      console.log("sync_score", sync_score);
+      //console.log("sync_score", sync_score);
       // console.log('after sync algorithem ', new Date());
-      //let sync_angals = angles_between_joints(data)
+
+      let d = {
+        me: { poses: [{ x: 2, y: 1.5 }, { x: 4, y: 3 }] },
+        you: { poses: [{ x: -2, y: -1.5 }, { x: -4, y: -3 }] }
+      }
+      // let sync_score = angles_between_joints(d);
+      console.log('sync_angals', sync_score);
       //send back to bouth in room
       io.to(data.roomId).emit("syncScore", sync_score);
 
       //save in db of both usesr
-      if (sync_score === undefined || sync_score == null) return;
-      let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
-      const syncscore = await SyncScore.create(dataToDB);
-      if (!syncscore) return;
+      // if (sync_score === undefined || sync_score == null) return;
+      // let dataToDB = { meeting_id: data.roomId, result: sync_score, time: data.time, activity: data.activity }
+      // const syncscore = await SyncScore.create(dataToDB);
+      // if (!syncscore) return;
     });
 
     socket.on("sendNotification", (data) => {

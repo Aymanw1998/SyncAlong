@@ -2,9 +2,18 @@
     Radial Vectors from the center of the torso
 	Angles between joints of the body
 */}
-const { procrustesNormalizeCurve,
+
+const {
+    procrustesNormalizeCurve,
     procrustesNormalizeRotation,
-    rebalanceCurve } = require('curve-matcher');
+    rebalanceCurve
+} = require('./step1/shapeSimilarity');
+// const {
+//     procrustesNormalizeCurve,
+//     procrustesNormalizeRotation,
+//     rebalanceCurve
+// } = require('curve-matcher');
+
 const { filter_poses_curr_action, filterByKeyPoints } = require('./filter_poses_curr_action');
 const { center_part, joints_keys } = require('./points_parts');
 
@@ -95,34 +104,29 @@ const angeleSimilarity = (angle1, angle2) => {
 }
 
 const angles_between_joints = (data) => {
+    if (data.you.poses === undefined || data.me.poses === undefined) return; //iffff something wrong with passing data
+    //filter peers by the curr activity and key poits
+    data = filter_poses_curr_action(data.activity, data.me.poses, data.you.poses);
+    if (!data) return; //doest chacks this minit
+
+    console.log('data angles_between_joints', data);
     //step1 - Euclidean Distance, Scaling and Transformation
     const curve1 = data.me.poses;
     const curve2 = data.you.poses;
     // first rebalance and normalize scale and translation of the curves
-    const normalizedCurve1 = procrustesNormalizeCurve(rebalanceCurve(curve1));
-    const normalizedCurve2 = procrustesNormalizeCurve(rebalanceCurve(curve2));
+    const normalizedCurve1 = procrustesNormalizeCurve(curve1, { numPoints: 50 });
+    const normalizedCurve2 = procrustesNormalizeCurve(curve2, { numPoints: 50 });
 
+    console.log('normalizedCurve1', normalizedCurve1, "normalizedCurve2", normalizedCurve2);
     // rotate normalizedCurve1 to match normalizedCurve2
     const rotatedCurve1 = procrustesNormalizeRotation(
         normalizedCurve1,
         normalizedCurve2
     );
-    //get center point of each peer.
-    //set new array of points in relation to center key,
-    let toros_coordinates1 = filterByKeyPoints(rotatedCurve1, center_part);
-    let toros_coordinates2 = filterByKeyPoints(curve2, center_part);
+    console.log('rotatedCurve1', rotatedCurve1);
 
-    //Radial Vectors from the center of the torso
-    let center_coordinates_p1 = centerTorso(toros_coordinates1);
-    let center_coordinates_p2 = centerTorso(toros_coordinates2);
-
-    //set new array of points in relation to center key,
-    let curve1_toros_relation = setCarvToTorose(rotatedCurve1, center_coordinates_p1);
-    let curve2_toros_relation = setCarvToTorose(normalizedCurve2, center_coordinates_p2);
-
-    data = filter_poses_curr_action(data.activity, curve1_toros_relation, curve2_toros_relation);
-    angles1 = angelsInJoints(data.me.poses, data.activity);
-    angles2 = angelsInJoints(data.you.poses, data.activity);
+    let angles1 = angelsInJoints(data.me.poses, data.activity);
+    let angles2 = angelsInJoints(data.you.poses, data.activity);
 
     let angeleSimilarity = angeleSimilarity(angles1, angles2);
     return angeleSimilarity;
