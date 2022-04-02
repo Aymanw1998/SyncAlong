@@ -15,14 +15,6 @@ const xss = require('xss-clean');
 const cors = require('cors');
 const multer = require('multer')
 
-// const { shapeSimilarity } = require('./syncAlgorithm/step1/shapeSimilarity');
-// const curve1 = [{ x: 2, y: 1.5 }, { x: 4, y: 3 }];
-// const curve2 = [{ x: 2, y: 1.5 }, { x: 4, y: 2 }];
-// const similarity = shapeSimilarity(curve1, curve2);
-// console.log('====================================');
-// console.log('similarity', similarity);
-// console.log('====================================');
-
 // Load env vars
 dotenv.config({ path: './config/.env' });
 
@@ -35,9 +27,9 @@ connectDB();
 //Middleware
 app.use(express.json());
 
-
 //app.use(express.urlencoded({ extended: false }));
 app.use("/images", express.static(path.join(__dirname, "public/images")));
+app.use('/avatars', express.static('image'))
 
 // Cookie parser when login user the token is saved in the server and send to http client
 app.use(cookieParser());
@@ -88,7 +80,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage: storage });
-app.post("/api/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("img"), (req, res) => {
   try {
     return res.status(200).json("File uploded successfully");
   } catch (error) {

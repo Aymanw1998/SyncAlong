@@ -167,9 +167,23 @@ const updateUser = asyncHandler(async (req, res, next) => {
     let salt = await bcrypt.genSalt(Number(process.env.SALT_KEY));
     req.body.password = await bcrypt.hash(req.body.password, salt);
   }
+  if (req.body.img) {
+    req.body.img = `https://sync-along-api.herokuapp.com/${req.file.filename}`;
+    req.body.avatar = req.body.img;
+  }
+
   let data = await User.updateOne({ _id: req.user.id }, req.body);
   if (!data) return new ErrorResponse(`faild to update`, 401)
   return successResponse(req, res, 'update done!');
+});
+
+const updateAvatar = asyncHandler(async (req, res, next) => {
+  req.body.updateAt = Date.now();
+  console.log('req.body.avatar', req.body.avatar, req.body.img);
+
+  let data = await User.updateOne({ _id: req.user.id }, req.body);
+  if (!data) return new ErrorResponse(`faild to update`, 401)
+  return res.json(req.body.img) //successResponse(req, res, req.body.avatar);
 });
 
 // @desc    Delete single user
@@ -421,6 +435,7 @@ module.exports = {
   getUser,
   createUser,
   updateUser,
+  updateAvatar,
   deleteUser,
   getUserById,
   loginUser,
