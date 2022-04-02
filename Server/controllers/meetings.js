@@ -271,11 +271,24 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const updateMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
-  console.log('req.user.role ', req.user.role);
-  // if (req.user.role === 'trainer')
-  meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
-  // else  //console.log('in trainee');
-  //   return next(new ErrorResponse('trainee cant do update... sorry', 401));
+  //whan updates status to activity thet is ended:
+  if (req.body.status) {
+    //trainer & trainee can do this call 
+    //each one of them - apans automaticly when meeting is ended.
+    let profile = await Profile.findByIdAndUpdate(req.user.profile_id,
+      {
+        $pull: { meetings: req.params.id },
+        $push: { ended_meetings: req.params.id }
+      },
+    )
+
+    meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
+
+    if (!meeting)
+      return next(new ErrorResponse('No ACTIVE meeting', 401));
+    return successResponse(req, res, meeting);
+
+  }
 
   if (!meeting) return new ErrorResponse(`faild to update`, 401)
   return successResponse(req, res, 'update done!');

@@ -30,15 +30,15 @@ const profileSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users'
   },
-  priority_activities: [{
-    type: String,
-    enum: body_areas
-  }],
   limitations: [{
     type: String,
     enum: body_areas,
   }],
   meetings: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'meetings'
+  }],
+  ended_meetings: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'meetings'
   }],
