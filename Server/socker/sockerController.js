@@ -1,4 +1,4 @@
-const { Server } = require('socket.io');
+// const { Server } = require('socket.io');
 const { SyncScore } = require('../models/sync-scores');
 
 const {
@@ -15,7 +15,7 @@ const socker = (server) => {
   const io = require("socket.io")(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"]
+      methods: ["GET", "POST", "PUT", "DELETE"]
     }
   });
 
