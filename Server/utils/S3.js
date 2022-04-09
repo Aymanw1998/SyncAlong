@@ -37,7 +37,7 @@ const S3 = {
     if (!newData) {
       throw Error('there was an error writing the file');
     } else {
-      return `https//:${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
+      return `https://${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
     }
   },
 
@@ -51,7 +51,7 @@ const S3 = {
     if (!newData) {
       throw Error('there was an error writing the file');
     } else {
-      return `https//:${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
+      return `https://${bucket}.s3.eu-west-1.amazonaws.com/${key}`;
     }
   },
 

@@ -9,6 +9,8 @@ const gravatar = require('gravatar');
 const crypto = require('crypto');
 const { authorize } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
+const s3 = require('../utils/s3');
+const { v4: uuid } = require('uuid');
 
 // @desc    Get all users
 // @route   GET /api/users/all
@@ -169,21 +171,31 @@ const updateUser = asyncHandler(async (req, res, next) => {
   }
   if (req.body.img) {
     req.body.img = `https://sync-along-api.herokuapp.com/${req.file.filename}`;
-    req.body.avatar = req.body.img;
+    req.body.avatar = req.body.img; 
   }
 
   let data = await User.updateOne({ _id: req.user.id }, req.body);
-  if (!data) return new ErrorResponse(`faild to update`, 401)
+  if (!data) return new ErrorResponse(`faild to update`, 401);
+  updateAvatar(req, res, next);
   return successResponse(req, res, 'update done!');
 });
 
-const updateAvatar = asyncHandler(async (req, res, next) => {
-  req.body.updateAt = Date.now();
-  console.log('req.body.avatar', req.body.avatar, req.body.img);
-
-  let data = await User.updateOne({ _id: req.user.id }, req.body);
-  if (!data) return new ErrorResponse(`faild to update`, 401)
-  return res.json(req.body.img) //successResponse(req, res, req.body.avatar);
+const updateAvatar = asyncHandler(async(req, res, next) => {
+   // the Recording sent
+   console.log('req.Recording: ', req.file);
+   // myRecording is array [name,type]
+   let myFile = req.file.originalname.split('.');
+   // save the type file in the variable
+   const typeMyFile = myFile[myFile.length - 1];
+   const buffer = req.file.buffer;
+   const key = `Avatars/${uuid()}.${typeMyFile}`;
+   const bucket = process.env.AWS_BUCKET_NAME;
+   await s3.write(buffer, key, bucket);
+   console.log('uploaded');
+   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME,  key, 60);
+   console.log('url: ', url);
+   let data = await User.updateOne({ _id: req.user._id }, {avatar: url});
+   if(data) return successResponse(req, res, url);
 });
 
 // @desc    Delete single user

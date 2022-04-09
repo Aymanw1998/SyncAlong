@@ -42,11 +42,12 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
     console.log('uploaded');
     const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME,  key, 60);
     console.log('url: ', url);
-    await Recording.create({
+    data = await Recording.create({
       name: key,
+      meeting_id: req.params.id,
       url: url
     });
-    return successResponse(req, res, {url: url});
+    return successResponse(req, res, data);
 });
 
 // @desc    Delete Recording from AWS S3 storage

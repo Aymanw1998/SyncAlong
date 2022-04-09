@@ -13,13 +13,13 @@ const storage = multer.memoryStorage({
     callback(null, '');
   }
 });
-const upload = multer({ storage }).single('file_data');
+const upload = multer({ storage }).single('file');
 
 // router
 //     .route('/upload')
 // .get(upload,uploadfunction)
 
 // sent file with name "file_data" to uploadfunction
-router.route('/').post(upload, uploadRecording).delete(deleteRecording);
+router.route('/:id').post(upload, uploadRecording).delete(deleteRecording);
 
 module.exports = router;

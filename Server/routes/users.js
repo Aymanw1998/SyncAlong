@@ -3,23 +3,19 @@ const { protect } = require('../middleware/auth');
 const multer = require('multer');
 //var upload = multer({ dest: 'image/' })
 
-var upload = multer({
-      storage: multer.diskStorage({
-            filename: (req, file, cb) => {
-                  console.log('file', file);
-                  cb(null, Date.now() + '.' + file.originalname.split('.').pop())
-            },
-            destination: (req, file, cb) => {
-                  return cb(null, 'image/')
-            }
-      })
-})
-
+const storage = multer.memoryStorage({
+      acl: 'public-read-write',
+      destination: (req, file, callback) => {
+        callback(null, '');
+      }
+    });
+const upload = multer({ storage }).single('file');
 
 const { getUsers, getUser, createUser, getUserById, updateUser, deleteUser,
       getTrainee, createTrainee, updateTrainee, getAllTrainees, deleteTrainee,
       loginUser, searchUserByQuery, getMyTrainer, updateAvatar,
       forgatPassword, resetPassword } = require('../controllers/users');
+const { json } = require('express');
 
 const router = express.Router();
 
@@ -32,7 +28,7 @@ router
       .route('/')
       .get(protect, getUser)
       .post(createUser)
-      .put(protect, upload.single('img'), updateUser)
+      .put(protect, upload, updateUser)
       .delete(protect, deleteUser);
 
 router
@@ -41,16 +37,11 @@ router
 
 router
       .route('/avatar')
-      .put(protect, upload.single('img'), async (req, res) => {
-            // req.body.img = `https://sync-along-api.herokuapp.com/avatars/${req.file.filename}`
-            req.body.img = `http://localhost:5000/avatars/${req.file.filename}`;
-            req.body.avatar = req.body.img;
-            updateAvatar(req, res);
-      })
+      .put(protect,upload, updateAvatar)
 
 router
       .route('/file')
-      .post(protect, upload.single('img'), async (req, res) => {
+      .post(protect, upload, async (req, res) => {
             res.json(req.file.filename)
       })
 
