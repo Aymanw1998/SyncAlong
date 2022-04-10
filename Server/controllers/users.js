@@ -9,7 +9,7 @@ const gravatar = require('gravatar');
 const crypto = require('crypto');
 const { authorize } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
-const s3 = require('../utils/s3');
+const s3 = require('../utils/S3');
 const { v4: uuid } = require('uuid');
 
 // @desc    Get all users
@@ -171,7 +171,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   }
   if (req.body.img) {
     req.body.img = `https://sync-along-api.herokuapp.com/${req.file.filename}`;
-    req.body.avatar = req.body.img; 
+    req.body.avatar = req.body.img;
   }
 
   let data = await User.updateOne({ _id: req.user.id }, req.body);
@@ -180,22 +180,22 @@ const updateUser = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, 'update done!');
 });
 
-const updateAvatar = asyncHandler(async(req, res, next) => {
-   // the Recording sent
-   console.log('req.Recording: ', req.file);
-   // myRecording is array [name,type]
-   let myFile = req.file.originalname.split('.');
-   // save the type file in the variable
-   const typeMyFile = myFile[myFile.length - 1];
-   const buffer = req.file.buffer;
-   const key = `Avatars/${uuid()}.${typeMyFile}`;
-   const bucket = process.env.AWS_BUCKET_NAME;
-   await s3.write(buffer, key, bucket);
-   console.log('uploaded');
-   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME,  key, 60);
-   console.log('url: ', url);
-   let data = await User.updateOne({ _id: req.user._id }, {avatar: url});
-   if(data) return successResponse(req, res, url);
+const updateAvatar = asyncHandler(async (req, res, next) => {
+  // the Recording sent
+  console.log('req.Recording: ', req.file);
+  // myRecording is array [name,type]
+  let myFile = req.file.originalname.split('.');
+  // save the type file in the variable
+  const typeMyFile = myFile[myFile.length - 1];
+  const buffer = req.file.buffer;
+  const key = `Avatars/${uuid()}.${typeMyFile}`;
+  const bucket = process.env.AWS_BUCKET_NAME;
+  await s3.write(buffer, key, bucket);
+  console.log('uploaded');
+  const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
+  console.log('url: ', url);
+  let data = await User.updateOne({ _id: req.user._id }, { avatar: url });
+  if (data) return successResponse(req, res, url);
 });
 
 // @desc    Delete single user
