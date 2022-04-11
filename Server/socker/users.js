@@ -21,9 +21,28 @@ const joinUser = (userId, roomId) => {
   })
 }
 
+const closeRoom = (roomId) => {
+  //close for both users in the room
+  users.map(user => {
+    if (user.roomId === roomId)
+      user.roomId = undefined;
+  })
+}
+
 const removeUser = (socketId) => {
-  console.log(users.length);
-  users = users.filter((user) => user.socketId !== socketId);
+  //find if this user is in a room meeting
+  let found_user = null;
+  users.find((user) => {
+    if (user.socketId === socketId) {
+      found_user = user;
+    }
+  });
+  //fillter out the user 
+  users.splice(users.findIndex(v => v.socketId === socketId), 1);
+  console.log('num after filter ', users);
+  //when this user is in a session then notify the outher in the room
+  if (found_user?.roomId) return found_user
+  else return null;
 };
 
 const getUser = (userId) => {
@@ -50,5 +69,6 @@ module.exports = {
   getUsers,
   removeUser,
   getUser,
-  getUsersInRoom
+  getUsersInRoom,
+  closeRoom,
 };

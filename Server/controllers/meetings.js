@@ -92,6 +92,17 @@ const getActiveMeeting = asyncHandler(async (req, res, next) => {
   return successResponse(req, res, meeting);
 });
 
+const getComplitedMeetings = asyncHandler(async (req, res, next) => {
+  let meetings = null;
+  if (req.user.role === 'trainer')
+    meetings = await Meeting.find({ tariner: req.user._id, status: false }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+  else  //console.log('in trainee');
+    meetings = await Meeting.find({ trainee: req.user._id, status: false }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+
+  if (meetings === null || meetings.length === 0)
+    return next(new ErrorResponse('No ACTIVE meeting', 401));
+  return successResponse(req, res, meetings);
+});
 // @desc    Get list of activities the system is oferes
 // @route   GET /api/meetings/ouractivities/:id
 // @access  Private 
@@ -318,5 +329,6 @@ module.exports = {
   createMeeting,
   updateMeeting,
   deleteMeeting,
-  getActiveMeeting
+  getActiveMeeting,
+  getComplitedMeetings
 };

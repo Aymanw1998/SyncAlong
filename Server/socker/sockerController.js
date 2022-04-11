@@ -1,4 +1,3 @@
-// const { Server } = require('socket.io');
 const { SyncScore } = require('../models/sync-scores');
 
 const {
@@ -20,16 +19,14 @@ const socker = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log("user conectted! socket=", socket.id);
+    console.log(`user conectted! socket= ${socket.id}`.green.bold);
     //when im enttering the system i have diffrent socket id 
     socket.on('addUser', (user_id, room_id) => {
-      addUser(user_id, socket.id, room_id);
+      addUser(user_id, socket.id, room_id); //Resets the new socket associated with the user
       let users = getUsers();
       let user = getUser(user_id);
-      console.log('user in the app', users);
-      console.log('user added', user);
-      //io.emit("getUsers", users);
-      //io.broadcast.emit("getNewUserAddToApp", user);
+      console.log('added', user);
+      console.log(`num of users in: ${users.length}`.green.bold);
       io.emit("getNewUserAddToApp", user);
     });
 
@@ -127,11 +124,38 @@ const socker = (server) => {
       console.log(`Error socket server: ${err}`);
     });
 
+    socket.on("closeRoom", (roomId) => {
+      closeRoom(roomId);
+      //no need to notify to anybody about this action...
+    });
+
+    socket.on("disconnectLogout", (userId) => {
+      //handele when clicked on logout
+      console.log('userId', userId);
+      let user_disconrct = null
+      if (userId) user_disconrct = getUser(userId);
+      if (user_disconrct) {
+        console.log(`a user disconnected! socket= ${user_disconrct.socketId}`.red.underline.bold);
+        let user_in_seeion = removeUser(user_disconrct.socketId);
+        if (user_in_seeion) { //notiffy the roomId
+          let userId = user_in_seeion.userId;
+          io.to(user_in_seeion.roomId).emit("userLeft", userId);
+        }
+        else   //else this user has roomId=undifind (retuend null) so no need to notify to anyone he left 
+          console.log('No notify sended - user left and clear out from users lists');
+      }
+    });
+
     socket.on("disconnect", () => {
-      console.log("a user disconnected! socket=", socket.id);
-      //removeUser(socket.id);
-      // let users = getUsersInRoom();
-      // io.emit("getUsers", users);
+      console.log(`a user disconnected! socket= ${socket.id}`.red.underline.bold);
+      let user_in_seeion = removeUser(socket.id);
+
+      if (user_in_seeion) { //notiffy the roomId
+        let userId = user_in_seeion.userId;
+        io.to(user_in_seeion.roomId).emit("userLeft", userId);
+      }
+      else   //else this user has roomId=undifind (retuend null) so no need to notify to anyone he left 
+        console.log('No notify sended - user left and clear out from users lists');
     });
   });
 
