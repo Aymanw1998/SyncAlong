@@ -6,15 +6,15 @@ const multer = require('multer');
 const storage = multer.memoryStorage({
       acl: 'public-read-write',
       destination: (req, file, callback) => {
-        callback(null, '');
+            callback(null, '');
       }
-    });
+});
 const upload = multer({ storage }).single('file');
 
 const { getUsers, getUser, createUser, getUserById, updateUser, deleteUser,
       getTrainee, createTrainee, updateTrainee, getAllTrainees, deleteTrainee,
       loginUser, searchUserByQuery, getMyTrainer, updateAvatar,
-      forgatPassword, resetPassword } = require('../controllers/users');
+      forgatPassword, resetPassword, updateAvatarTrainee } = require('../controllers/users');
 const { json } = require('express');
 
 const router = express.Router();
@@ -37,7 +37,11 @@ router
 
 router
       .route('/avatar')
-      .put(protect,upload, updateAvatar)
+      .put(protect, upload, updateAvatar)
+
+router
+      .route('/avatar/tarinee/:id')
+      .put(protect, upload, updateAvatarTrainee)
 
 router
       .route('/file')

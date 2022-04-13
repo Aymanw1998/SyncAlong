@@ -194,9 +194,28 @@ const updateAvatar = asyncHandler(async (req, res, next) => {
   console.log('uploaded');
   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
   console.log('url: ', url);
-  let data = await User.updateOne({ _id: req.user._id }, { avatar: url });
+  let data = data = await User.updateOne({ _id: req.user._id }, { avatar: url });
   if (data) return successResponse(req, res, url);
 });
+
+const updateAvatarTrainee = asyncHandler(async (req, res, next) => {
+  // the Recording sent
+  console.log('req.Recording: ', req.file);
+  // myRecording is array [name,type]
+  let myFile = req.file.originalname.split('.');
+  // save the type file in the variable
+  const typeMyFile = myFile[myFile.length - 1];
+  const buffer = req.file.buffer;
+  const key = `Avatars/${uuid()}.${typeMyFile}`;
+  const bucket = process.env.AWS_BUCKET_NAME;
+  await s3.write(buffer, key, bucket);
+  console.log('uploaded');
+  const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
+  console.log('url: ', url);
+  let data = await User.updateOne({ _id: req.params.id }, { avatar: url });
+  if (data) return successResponse(req, res, url);
+});
+
 
 // @desc    Delete single user
 // @route   DELET /api/users/
@@ -459,7 +478,8 @@ module.exports = {
   getMyTrainer,
   createTrainee,
   updateTrainee,
-  deleteTrainee
+  deleteTrainee,
+  updateAvatarTrainee
 };
 
 // Get token from model, create cookie and send response

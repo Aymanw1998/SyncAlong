@@ -265,8 +265,17 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   // console.log(req.body.date.getTime());
   //console.log(req.body.date.getHours());
 
-  let meeting = await Meeting.create(req.body);
-
+  let meeting = await Meeting.create(req.body)//.populate('tariner trainee', '_id user role avatar')
+  let m2 = {
+    _id: meeting._id,
+    title: meeting.title,
+    date: meeting.date,
+    activities: meeting.activities,
+    status: meeting.status,
+    tariner: { _id: req.user._id, user: req.user.user, avatar: req.user.avatar, role: req.user.role },
+    trainee: { _id: req.body.trainee, user: participantUser.user, avatar: participantUser.avatar, role: participantUser.role }
+  }
+  console.log('meeting', m2);
   await Profile.findByIdAndUpdate(myProfile._id, {
     $push: { meetings: meeting._id }
   });
@@ -274,7 +283,7 @@ const createMeeting = asyncHandler(async (req, res, next) => {
     $push: { meetings: meeting._id }
   });
 
-  return successResponse(req, res, meeting);
+  return successResponse(req, res, m2);
 });
 
 // @desc    Update meeting
