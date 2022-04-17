@@ -38,7 +38,11 @@ const removeUser = (socketId) => {
     }
   });
   //fillter out the user 
-  users.splice(users.findIndex(v => v.socketId === socketId), 1);
+  console.log(users);
+  const index = users.findIndex(v => v.socketId === socketId);
+  console.log(index);
+  if(index < 0) return null;
+  users.splice(index, 1);
   console.log('num after filter ', users);
   //when this user is in a session then notify the outher in the room
   if (found_user?.roomId) return found_user

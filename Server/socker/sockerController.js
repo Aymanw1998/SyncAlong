@@ -27,6 +27,7 @@ const socker = (server) => {
       let user = getUser(user_id);
       console.log('added', user);
       console.log(`num of users in: ${users.length}`.green.bold);
+      console.log(users);
       io.emit("getNewUserAddToApp", user);
     });
 
@@ -114,10 +115,22 @@ const socker = (server) => {
       io.to(yourSocketId).emit("peer1inFrame", yourSocketId);
     });
 
-    socket.on("t", (yourSocketId) => {
-      console.log('t', yourSocketId);
+    socket.on("t", (data) => {
+      console.log(data);
+      console.log('t', data.yourSocketId);
       let id = true
-      io.to(yourSocketId).emit("t", id);
+      console.log('socket undifined', data.roomId);
+      const users = getUsersInRoom(data.roomId);
+      console.log(users);
+      users.map(user =>{
+        console.log(user.socketId, socket.id);
+        if(user.socketId !== socket.id){
+          console.log('t', user.socketId);
+          io.to(user.socketId).emit("t", id);
+          return;
+        }
+      })
+      io.to(data.yourSocketId).emit("t", id);
     });
 
     socket.on("error", (err) => {
@@ -146,8 +159,10 @@ const socker = (server) => {
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (reason) => {
+
       console.log(`a user disconnected! socket= ${socket.id}`.red.underline.bold);
+      console.log(`reason ====> ${reason}`.yellow.bold);
       let user_in_seeion = removeUser(socket.id);
 
       if (user_in_seeion) { //notiffy the roomId
