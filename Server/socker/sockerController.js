@@ -5,6 +5,7 @@ const {
   getUser,
   removeUser,
   getUsersInRoom,
+  pushMediaPipe,
 } = require('./users');
 
 const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
@@ -84,6 +85,24 @@ const socker = (server) => {
       io.to(data.to).emit("resivingPoses", data)
     })
 
+    ///test for Eyal -passing data per frames
+    //Each user sends to the server his information. The server maintains a list of points 
+    //and forwards a synchronization calculation based on recent times received from both users
+    socket.on("sendPosesByPeers", (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
+      console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId);
+      let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
+
+      console.log('dataToSync', dataToSync, new Date());
+      if (dataToSync) {
+        //sync alg
+        console.log(" before sendPosesByPeers", new Date());
+        let sync_score = procrustes_analysis(dataToSync);
+        console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
+        io.to(roomId).emit("resivingSyncScoure", sync_score);
+      }
+    })
+
+
     //when peer2 gets the massage he does a messag him self and retuen the respons to all in the room
     socket.on('sendOurPoses', async (data) => {
       // sync_score = number between 0-1
@@ -115,6 +134,13 @@ const socker = (server) => {
       io.to(yourSocketId).emit("peer1inFrame", yourSocketId);
     });
 
+    socket.on("accseptScheduleMeetingCall", (yourSocketId) => {
+      console.log('accseptScheduleMeetingCall', yourSocketId);
+      let id = true
+      io.to(yourSocketId).emit("accseptScheduleMeetingCall", id);
+    });
+
+
     socket.on("t", (data) => {
       console.log(data);
       console.log('t', data.yourSocketId);
@@ -122,9 +148,9 @@ const socker = (server) => {
       console.log('socket undifined', data.roomId);
       const users = getUsersInRoom(data.roomId);
       console.log(users);
-      users.map(user =>{
+      users.map(user => {
         console.log(user.socketId, socket.id);
-        if(user.socketId !== socket.id){
+        if (user.socketId !== socket.id) {
           console.log('t', user.socketId);
           io.to(user.socketId).emit("t", id);
           return;
@@ -160,7 +186,6 @@ const socker = (server) => {
     });
 
     socket.on("disconnect", (reason) => {
-
       console.log(`a user disconnected! socket= ${socket.id}`.red.underline.bold);
       console.log(`reason ====> ${reason}`.yellow.bold);
       let user_in_seeion = removeUser(socket.id);

@@ -6,16 +6,40 @@
 */}
 const { bottom_part, upper_part, bottom_activities, upper_activities } = require('./points_parts');
 
+// const filterByKeyPoints = (pose_peer, parts) => {
+//     let is_null_arr = pose_peer.find(el => el === null);
+//     if (is_null_arr) {
+//         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
+//         return null;
+//     }
+
+//     let result = [];
+//     let poses = [];
+//     for (const i in pose_peer) { // [ [],[],[], null ]
+//         result = [];
+//         if (pose_peer[i] === null) {
+//             console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
+//             return null;
+//         }
+//         for (const j in parts) {
+//             let index = parts[j];
+//             //console.log(index, i, 'peer');
+//             result.push(pose_peer[i][index]);
+//         }
+//         poses.push(result);
+//     }
+//     return poses;
+// }
+
 const filterByKeyPoints = (pose_peer, parts) => {
     let is_null_arr = pose_peer.find(el => el === null);
     if (is_null_arr) {
         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
         return null;
     }
-
     let result = [];
     let poses = [];
-    for (const i in pose_peer) { // [ [],[],[], null ]
+    for (const i in pose_peer) { // [ [],[],[], null ] // [ [] ]
         result = [];
         if (pose_peer[i] === null) {
             console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
@@ -23,8 +47,11 @@ const filterByKeyPoints = (pose_peer, parts) => {
         }
         for (const j in parts) {
             let index = parts[j];
-            //console.log(index, i, 'peer');
-            result.push(pose_peer[i][index]);
+            if (pose_peer.length === 33) {
+                result.push(pose_peer[index]);
+            }
+            else
+                result.push(pose_peer[i][index]);
         }
         poses.push(result);
     }

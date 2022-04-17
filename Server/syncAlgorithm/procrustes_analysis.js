@@ -25,9 +25,9 @@ const similarityAvarag = (shortestArr, youPoses, mePoses) => {
             similarity = shapeSimilarity(curve_me_elment1, curve_you_elment1);
 
         sum = sum + similarity;
-        console.log(i, ' procrustes_analysis', similarity, 'sum:', sum);
+        // console.log(i, ' procrustes_analysis', similarity, 'sum:', sum);
     }
-    console.log(sum, shortestArr.length, sum / shortestArr.length);
+    //console.log(sum, shortestArr.length, sum / shortestArr.length);
     similarityAvarage = sum / shortestArr.length; //avarage for 1 sec of time series
     return similarityAvarage;
 }

@@ -1,5 +1,5 @@
 const users = [];
-//{userId, socketId, roomId, type}
+//{userId, socketId, roomId, mediapipe}
 
 const addUser = (userId, socketId, roomId) => {
   //when exists - replace his socket id to curr socket 
@@ -10,8 +10,9 @@ const addUser = (userId, socketId, roomId) => {
     }
   });
   //add user to array only if he is not there
+  let mediapipe = [];
   !users.some((user) => user.userId === userId) &&
-    users.push({ userId, socketId, roomId });
+    users.push({ userId, socketId, roomId, mediapipe });
 };
 
 const joinUser = (userId, roomId) => {
@@ -41,7 +42,7 @@ const removeUser = (socketId) => {
   console.log(users);
   const index = users.findIndex(v => v.socketId === socketId);
   console.log(index);
-  if(index < 0) return null;
+  if (index < 0) return null;
   users.splice(index, 1);
   console.log('num after filter ', users);
   //when this user is in a session then notify the outher in the room
@@ -67,6 +68,57 @@ const getUsersInRoom = (roomId) => {
 
 const getUsers = () => { return users; }
 
+const pushMediaPipe = (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
+  // data= {
+  //   poses: posesArry,
+  //   time : timeOfColectionPose,
+  // }
+  users.find(user => {
+    if (user.socketId == mySocketId) {
+      user.mediapipe.push(data);
+      console.log('user', user);
+    }
+  })
+
+  let found_el = null;
+  if (trainer) {
+    let found = false;
+    let found_user = null;
+
+    users.find(user => {
+      if (user.socketId == yourSocketId)
+        found_user = user;
+    });
+    console.log('trainee-P2', found_user);
+
+    while (!found) {
+      if (found_user && found_user.mediapipe.length >= 2) {
+        if (found_user.mediapipe[found_user.mediapipe.length - 2].time === data.time) {
+          found_el = found_user.mediapipe[found_user.mediapipe.length - 2];
+        }
+        else {
+          found_el = found_user.mediapipe[found_user.mediapipe.length - 1];
+        }
+      }
+      else return null;
+      if (found_el) found = true
+    }
+    if (found_el) {
+      let dataToSync = {
+        me: data,
+        you: found_el,
+        activity,
+        time: data.time,
+        roomId
+      }
+      return dataToSync;
+    }
+    else return null;
+  }
+  else return null;
+}
+
+
 module.exports = {
   addUser,
   joinUser,
@@ -75,4 +127,5 @@ module.exports = {
   getUser,
   getUsersInRoom,
   closeRoom,
+  pushMediaPipe,
 };
