@@ -6,6 +6,7 @@ const {
   removeUser,
   getUsersInRoom,
   pushMediaPipe,
+  closeRoom,
 } = require('./users');
 
 const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
@@ -165,7 +166,9 @@ const socker = (server) => {
 
     socket.on("closeRoom", (roomId) => {
       closeRoom(roomId);
-      //no need to notify to anybody about this action...
+      //notify to the room about this action...
+      //case user close the room and another is in the room waiting for his to reconect
+      io.to(roomId).emit("closeRoom", roomId);
     });
 
     socket.on("disconnectLogout", (userId) => {

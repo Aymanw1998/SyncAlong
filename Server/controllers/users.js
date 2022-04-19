@@ -194,7 +194,7 @@ const updateAvatar = asyncHandler(async (req, res, next) => {
   console.log('uploaded');
   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
   console.log('url: ', url);
-  let data = data = await User.updateOne({ _id: req.user._id }, { avatar: url });
+  let data = await User.updateOne({ _id: req.user._id }, { avatar: url });
   if (data) return successResponse(req, res, url);
 });
 

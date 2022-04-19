@@ -83,9 +83,9 @@ const getActiveMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
   console.log('req.user.role ', req.user.role);
   if (req.user.role === 'trainer')
-    meeting = await Meeting.find({ tariner: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+    meeting = await Meeting.find({ tariner: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
   else  //console.log('in trainee');
-    meeting = await Meeting.find({ trainee: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
+    meeting = await Meeting.find({ trainee: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
 
   if (meeting === null || meeting.length === 0)
     return next(new ErrorResponse('No ACTIVE meeting', 401));
