@@ -217,7 +217,7 @@ const socker = (server) => {
 
       let user = getUserBySocketId(socket.id);
       console.log('user ', user);
-
+      if(user === null) return;
       if (reason === "ping timeout") {
         console.log('ocket.id', socket.id);
         io.to(user.roomId).emit("disconnected", reason);
