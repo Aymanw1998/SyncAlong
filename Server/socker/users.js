@@ -9,6 +9,7 @@ const addUser = (userId, socketId, roomId) => {
       return;
     }
   });
+  console.log('add' ,userId, socketId, roomId);
   //add user to array only if he is not there
   let mediapipe = [];
   !users.some((user) => user.userId === userId) &&
@@ -39,7 +40,7 @@ const removeUser = (socketId) => {
     }
   });
   //fillter out the user 
-  console.log(users);
+  console.log('users', users);
   const index = users.findIndex(v => v.socketId === socketId);
   console.log(index);
   if (index < 0) return null;
@@ -49,6 +50,16 @@ const removeUser = (socketId) => {
   if (found_user?.roomId) return found_user
   else return null;
 };
+
+const getUserBySocketId = (socketId) => {
+  let found_user = null;
+  users.find((user) => {
+    if (user.socketId === socketId) {
+      found_user = user;
+    }
+  });
+  return found_user;
+}
 
 const getUser = (userId) => {
   let found_user = null;
@@ -128,4 +139,5 @@ module.exports = {
   getUsersInRoom,
   closeRoom,
   pushMediaPipe,
+  getUserBySocketId
 };

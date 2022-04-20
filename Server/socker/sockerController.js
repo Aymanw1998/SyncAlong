@@ -7,6 +7,7 @@ const {
   getUsersInRoom,
   pushMediaPipe,
   closeRoom,
+  getUserBySocketId,
 } = require('./users');
 
 const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
@@ -22,6 +23,12 @@ const socker = (server) => {
 
   io.on('connection', (socket) => {
     console.log(`user conectted! socket= ${socket.id}`.green.bold);
+    const socketId = socket.id;
+    const users = getUsers();
+    io.to(socketId).emit("connected",  socketId, users);
+
+   // io.emit("connected", socketId, users);
+
     //when im enttering the system i have diffrent socket id 
     socket.on('addUser', (user_id, room_id) => {
       addUser(user_id, socket.id, room_id); //Resets the new socket associated with the user
@@ -165,11 +172,27 @@ const socker = (server) => {
     });
 
     socket.on("closeRoom", (roomId) => {
-      closeRoom(roomId);
+      console.log('closeRoom', roomId);
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
       io.to(roomId).emit("closeRoom", roomId);
+      console.log('closeRoom', roomId);
+      closeRoom(roomId);
     });
+
+    socket.on("reconect", (userId, roomId) => {
+      addUser(userId, socket.id, roomId); //Resets the new socket associated with the user
+      console.log('reconect userId', userId);
+      roomId && socket.join(roomId);
+      let user = getUser(userId);
+      let users = getUsersInRoom(roomId);
+      console.log('reconect user', user);
+      console.log('all users in room', roomId, users)
+      //notify to the room about this action...
+      //case user close the room and another is in the room waiting for his to reconect
+      io.to(roomId).emit("reconect", users);
+    });
+
 
     socket.on("disconnectLogout", (userId) => {
       //handele when clicked on logout
@@ -191,6 +214,15 @@ const socker = (server) => {
     socket.on("disconnect", (reason) => {
       console.log(`a user disconnected! socket= ${socket.id}`.red.underline.bold);
       console.log(`reason ====> ${reason}`.yellow.bold);
+
+      let user = getUserBySocketId(socket.id);
+      console.log('user ', user);
+
+      if (reason === "ping timeout") {
+        console.log('ocket.id', socket.id);
+        io.to(user.roomId).emit("disconnected", reason);
+      }
+
       let user_in_seeion = removeUser(socket.id);
 
       if (user_in_seeion) { //notiffy the roomId
