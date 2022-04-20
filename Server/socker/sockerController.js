@@ -227,7 +227,7 @@ const socker = (server) => {
 
       if (user_in_seeion) { //notiffy the roomId
         let userId = user_in_seeion.userId;
-        io.to(user_in_seeion.roomId).emit("userLeft", userId);
+        io.to(user_in_seeion.roomId).emit("userLeft", userId, reason);
       }
       else   //else this user has roomId=undifind (retuend null) so no need to notify to anyone he left 
         console.log('No notify sended - user left and clear out from users lists');
