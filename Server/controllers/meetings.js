@@ -67,6 +67,8 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
     return successResponse(req, res, null);
   else {
     meetings = meetings.filter(i => machDates(i.date, now))
+    console.log(meetings);
+    meetings = meetings.filter(i => i.urlRoom === undefined)
     return successResponse(req, res, meetings);
   }
 });
@@ -291,24 +293,24 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const updateMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
+  console.log('req.body update', req.body);
   //whan updates status to activity thet is ended:
-  if (req.body.status) {
-    //trainer & trainee can do this call 
-    //each one of them - apans automaticly when meeting is ended.
-    let profile = await Profile.findByIdAndUpdate(req.user.profile_id,
-      {
-        $pull: { meetings: req.params.id },
-        $push: { ended_meetings: req.params.id }
-      },
-    )
+  //trainer & trainee can do this call 
+  //each one of them - apans automaticly when meeting is ended.
+  // let profile = await Profile.findByIdAndUpdate(req.user.profile_id,
+  //   {
+  //     $pull: { meetings: req.params.id },
+  //     $push: { ended_meetings: req.params.id }
+  //   },
+  // )
 
-    meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
+  meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
 
-    if (!meeting)
-      return next(new ErrorResponse('No ACTIVE meeting', 401));
-    return successResponse(req, res, meeting);
+  if (!meeting)
+    return next(new ErrorResponse('No ACTIVE meeting', 401));
+  return successResponse(req, res, meeting);
 
-  }
+
 
   if (!meeting) return new ErrorResponse(`faild to update`, 401)
   return successResponse(req, res, 'update done!');
