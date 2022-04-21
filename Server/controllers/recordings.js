@@ -56,7 +56,7 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
   console.log('meeting', meeting);
   if (!meeting)
     return next(new ErrorResponse('meeting', 401));
-  return successResponse(req, res, meeting);
+  return successResponse(req, res, {url, meeting_id: req.params.id});
 
   // return successResponse(req, res, meeting);
 });
