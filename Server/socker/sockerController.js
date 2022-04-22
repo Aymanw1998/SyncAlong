@@ -25,9 +25,9 @@ const socker = (server) => {
     console.log(`user conectted! socket= ${socket.id}`.green.bold);
     const socketId = socket.id;
     const users = getUsers();
-    io.to(socketId).emit("connected",  socketId, users);
+    io.to(socketId).emit("connected", socketId, users);
 
-   // io.emit("connected", socketId, users);
+    // io.emit("connected", socketId, users);
 
     //when im enttering the system i have diffrent socket id 
     socket.on('addUser', (user_id, room_id) => {
@@ -137,6 +137,12 @@ const socker = (server) => {
       io.to(data.roomId).emit("notification", notification);
     });
 
+    socket.on("statePeer", (data) => {
+      let state = data.state;
+      console.log('statePeer', state, 'send to you - ', data.yourSocketId);
+      io.to(data.yourSocketId).emit("statePeer", state);
+    });
+
     socket.on("peer1inFrame", (yourSocketId) => {
       console.log('peer1inFrame');
       io.to(yourSocketId).emit("peer1inFrame", yourSocketId);
@@ -147,7 +153,6 @@ const socker = (server) => {
       let id = true
       io.to(yourSocketId).emit("accseptScheduleMeetingCall", id);
     });
-
 
     socket.on("t", (data) => {
       console.log(data);
@@ -217,7 +222,7 @@ const socker = (server) => {
 
       let user = getUserBySocketId(socket.id);
       console.log('user ', user);
-      if(user === null) return;
+      if (user === null) return;
       if (reason === "ping timeout") {
         console.log('ocket.id', socket.id);
         io.to(user.roomId).emit("disconnected", reason);
