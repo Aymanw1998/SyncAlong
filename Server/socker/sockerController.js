@@ -172,17 +172,23 @@ const socker = (server) => {
       io.to(data.yourSocketId).emit("t", id);
     });
 
+    socket.on("meetingComplited", (data) => {
+      console.log(data);
+      console.log('meetingComplited', data.to);
+      io.to(data.to).emit("meetingComplited", data);
+    });
+
     socket.on("error", (err) => {
       console.log(`Error socket server: ${err}`);
     });
 
-    socket.on("closeRoom", (roomId) => {
-      console.log('closeRoom', roomId);
+    socket.on("closeRoom", (meeting) => {
+      console.log('closeRoom', meeting);
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
-      io.to(roomId).emit("closeRoom", roomId);
-      console.log('closeRoom', roomId);
-      closeRoom(roomId);
+      io.to(meeting._id).emit("closeRoom", meeting);
+      console.log('closeRoom', meeting._i);
+      closeRoom(meeting._i);
     });
 
     socket.on("reconect", (userId, roomId) => {
