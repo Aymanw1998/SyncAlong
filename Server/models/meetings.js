@@ -17,6 +17,9 @@ const meetingSchema = new mongoose.Schema({
     type: Date,
     required: [true, "Please add a date by -> new Date(y, m, d, h, m)"],
   },
+  dateEnd: {
+    type: Date,
+  },
   status: {
     type: Boolean,
     default: false

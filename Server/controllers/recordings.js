@@ -49,14 +49,16 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
     url: url
   });
 
+  let dateEnd = new Date();
   let meeting = await Meeting.updateOne({ _id: req.params.id }, {
     status: false,
-    urlRoom: url
+    urlRoom: url,
+    dateEnd
   });
   console.log('meeting', meeting);
   if (!meeting)
     return next(new ErrorResponse('meeting', 401));
-  return successResponse(req, res, {url, meeting_id: req.params.id});
+  return successResponse(req, res, { url, meeting_id: req.params.id, dateEnd });
 
   // return successResponse(req, res, meeting);
 });
