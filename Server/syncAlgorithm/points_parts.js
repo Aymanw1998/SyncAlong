@@ -10,14 +10,17 @@ const upper_part = {
 }
 
 const bottom_part = {
-    right_leg: [23, 25, 27],
-    left_leg: [24, 26, 28]
+    right_leg: [25, 27, 29, 31],
+    left_leg: [26, 28, 30, 32]
 }
 
 //add activitys as gos.....
 const upper_activities = [
     'hands-x', 'hands-y', 'swim-hands', 'swing-hands',
     "left-hand-up", "right-hand-up", 'crazy',
+
+    'left-leg-up', 'right-leg-up', 'legs-both-up',
+    '90leging-right', '90leging-left',
 
     //all of the body - must be in both upper&lower
     'poshup', 'baly-run', 'baly-legs',

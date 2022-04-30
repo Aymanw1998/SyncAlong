@@ -23,7 +23,7 @@ const { bottom_part, upper_part, bottom_activities, upper_activities } = require
 //         }
 //         for (const j in parts) {
 //             let index = parts[j];
-//             //console.log(index, i, 'peer');
+//             console.log(index, i, 'peer');
 //             result.push(pose_peer[i][index]);
 //         }
 //         poses.push(result);
@@ -80,10 +80,10 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         let all_parts_upper = [];
         all_parts_upper.push(...upper_part.left_hand)
         all_parts_upper.push(...upper_part.right_hand)
-        all_parts_bottom.push(...[27]);
-        all_parts_bottom.push(...[28])
-        // all_parts.push(...[bottom_part.left_leg])
-        //  all_parts.push(...bottom_part.right_leg)
+        // all_parts_bottom.push(...[27]);
+        // all_parts_bottom.push(...[28])
+        all_parts_bottom.push(...bottom_part.left_leg)
+        all_parts_bottom.push(...bottom_part.right_leg)
 
         filtered_pose1 = filterByKeyPoints(pose_peer1, all_parts_bottom);
         filtered_pose2 = filterByKeyPoints(pose_peer2, all_parts_bottom);
@@ -106,7 +106,6 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_pose1 = filterByKeyPoints(pose_peer1, both_hands);
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_hands);
     }
-
     else if (bottom_part && curr_activity.includes("left")) {
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.left_leg);
@@ -117,10 +116,10 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
     }
     else if (bottom_part && !curr_activity.includes("right") && !curr_activity.includes("left")) {
         let both_legs = []
-        // both_legs.push(...bottom_part.left_leg)
-        // both_legs.push(...bottom_part.right_leg)
-        both_legs.push(...[27]);
-        both_legs.push(...[28])
+        both_legs.push(...bottom_part.left_leg)
+        both_legs.push(...bottom_part.right_leg)
+        // both_legs.push(...[27]);
+        // both_legs.push(...[28])
         filtered_pose1 = filterByKeyPoints(pose_peer1, both_legs);
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_legs);
     }

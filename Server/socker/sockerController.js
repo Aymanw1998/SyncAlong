@@ -121,7 +121,9 @@ const socker = (server) => {
         you: { poses: [{ x: -2, y: -1.5 }, { x: -4, y: -3 }] }
       }
       // let sync_score = angles_between_joints(d);
+      console.log(" before sendPosesByPeers", new Date());
       console.log('sync_angals', sync_score);
+      console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
       //send back to bouth in room
       io.to(data.roomId).emit("syncScore", sync_score);
 

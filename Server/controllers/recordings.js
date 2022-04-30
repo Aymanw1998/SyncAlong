@@ -39,9 +39,14 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
   const buffer = req.file.buffer;
   const key = `Recordings/${uuid()}.${typeMyFile}`;
   const bucket = process.env.AWS_BUCKET_NAME;
-  await s3.write(buffer, key, bucket);
-  console.log('uploaded');
-  const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
+  let url = null;
+  try {
+    await s3.write(buffer, key, bucket);
+    console.log('uploaded');
+    url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
+  } catch (error) {
+    return next(new ErrorResponse('cannot save', 401));
+  }
   console.log('url: ', url);
   data = await Recording.create({
     name: key,
