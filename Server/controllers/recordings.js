@@ -24,7 +24,7 @@ const getRecording = asyncHandler(async (res, req, next) => {
 // @access  Private
 const uploadRecording = asyncHandler(async (req, res, next) => {
   // the Recording sent
-  console.log('req.Recording: ', req.file);
+  //console.log('req.Recording: ', req.file);
   // myRecording is array [name,type]
   let myFile = req.file.originalname.split('.');
   // save the type file in the variable
@@ -42,12 +42,12 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
   let url = null;
   try {
     await s3.write(buffer, key, bucket);
-    console.log('uploaded');
+    // console.log('uploaded');
     url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
   } catch (error) {
     return next(new ErrorResponse('cannot save', 401));
   }
-  console.log('url: ', url);
+  /// console.log('url: ', url);
   data = await Recording.create({
     name: key,
     meeting_id: req.params.id,
@@ -60,7 +60,7 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
     urlRoom: url,
     dateEnd
   });
-  console.log('meeting', meeting);
+  // console.log('meeting', meeting);
   if (!meeting)
     return next(new ErrorResponse('meeting', 401));
   return successResponse(req, res, { url, meeting_id: req.params.id, dateEnd });

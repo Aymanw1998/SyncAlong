@@ -18,7 +18,8 @@ const socker = (server) => {
     cors: {
       origin: "*",
       methods: ["GET", "POST", "PUT", "DELETE"]
-    }
+    },
+    upgradeTimeout: 30000 // default value is 10000ms, changing it to 20k or more
   });
 
   io.on('connection', (socket) => {
@@ -26,8 +27,6 @@ const socker = (server) => {
     const socketId = socket.id;
     const users = getUsers();
     io.to(socketId).emit("connected", socketId, users);
-
-    // io.emit("connected", socketId, users);
 
     //when im enttering the system i have diffrent socket id 
     socket.on('addUser', (user_id, room_id) => {
@@ -58,17 +57,12 @@ const socker = (server) => {
     socket.on('joinUser', (from, to, roomId, callback) => {
       socket.join(roomId);
       joinUser(from, roomId);
-      let users = getUsersInRoom(roomId);
+      // let users = getUsersInRoom(roomId);
+      let users = getUsers();
       //callback(users)
-      let res = roomId;
+      let res = from;
+      console.log('responsRoomId', users);
       io.to(roomId).emit("responsRoomId", res);
-
-      // const user = getUser(to);
-      // user && io.to(user?.socketId).emit("callAccepted", {
-      //   joind: from,
-      //   roomId: roomId,
-      //   participantsInRoom: users
-      // });
     });
 
     socket.on("callUser", ({ userToCall, signalData, from, name }) => {
@@ -79,6 +73,13 @@ const socker = (server) => {
       console.log('calltoTrainee');
       let data = true;
       io.to(yourSocketId).emit("calltoTrainee", data);
+    });
+
+
+    socket.on("calltoTraineeQuickMeeting", data => {
+      console.log('calltoTraineeQuickMeeting', data);
+      let quickMeeting = data.quickMeeting
+      io.to(data.yourSocketId).emit("calltoTraineeQuickMeeting", quickMeeting);
     });
 
     socket.on("ourDelay", data => {
@@ -93,10 +94,11 @@ const socker = (server) => {
       io.to(data.to).emit("resivingPoses", data)
     })
 
+
     ///test for Eyal -passing data per frames
     //Each user sends to the server his information. The server maintains a list of points 
     //and forwards a synchronization calculation based on recent times received from both users
-    socket.on("sendPosesByPeers", (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
+    socket.on("sendPosesByPeers", async (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
       console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId);
       let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
 
@@ -107,6 +109,11 @@ const socker = (server) => {
         let sync_score = procrustes_analysis(dataToSync);
         console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
         io.to(roomId).emit("resivingSyncScoure", sync_score);
+
+        //save in db of both usesr
+        if (sync_score === undefined || sync_score == null) return;
+        let dataToDB = { meeting_id: roomId, result: sync_score, time: data.time, activity: activity }
+        const syncscore = await SyncScore.create(dataToDB);
       }
     })
 
@@ -192,6 +199,17 @@ const socker = (server) => {
       closeRoom(meetingId);
       io.to(meetingId).emit("closeRoom", meetingId);
     });
+
+    socket.on("dataToReconect", data => {
+      console.log('reconect userId', data);
+      io.to(data.yourSocketId).emit("dataToReconect", data);
+    });
+
+    socket.on("traineeReconect", trainee => {
+      console.log('reconect userId', trainee);
+      io.to(trainee).emit("traineeReconect", trainee);
+    });
+
 
     socket.on("reconect", (userId, roomId) => {
       addUser(userId, socket.id, roomId); //Resets the new socket associated with the user

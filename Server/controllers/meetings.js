@@ -304,16 +304,15 @@ const updateMeeting = asyncHandler(async (req, res, next) => {
   //   },
   // )
 
+  if (req.body.status === true) {
+    await Meeting.findOneAndUpdate({ status: true }, { status: false });
+  }
+
   meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
 
   if (!meeting)
     return next(new ErrorResponse('No ACTIVE meeting', 401));
   return successResponse(req, res, meeting);
-
-
-
-  if (!meeting) return new ErrorResponse(`faild to update`, 401)
-  return successResponse(req, res, 'update done!');
 });
 
 // @desc    Delete meeting
