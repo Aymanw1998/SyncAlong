@@ -1,5 +1,5 @@
 const users = [];
-//{userId, socketId, roomId, mediapipe}
+//{userId, socketId, roomId, mediapipe,frame}
 
 const addUser = (userId, socketId, roomId) => {
   //when exists - replace his socket id to curr socket 
@@ -9,7 +9,7 @@ const addUser = (userId, socketId, roomId) => {
       return;
     }
   });
-  console.log('add' ,userId, socketId, roomId);
+  console.log('add', userId, socketId, roomId);
   //add user to array only if he is not there
   let mediapipe = [];
   !users.some((user) => user.userId === userId) &&
@@ -120,7 +120,8 @@ const pushMediaPipe = (data, mySocketId, yourSocketId, trainer, activity, roomId
         you: found_el,
         activity,
         time: data.time,
-        roomId
+        roomId,
+        //frame
       }
       return dataToSync;
     }

@@ -25,7 +25,7 @@ const getProfile = asyncHandler(async (req, res, next) => {
       )
     );
   }
-  const profile = await Profile.findById(req.user.profile_id);
+  const profile = await Profile.findById(req.user.profile_id).populate('traineeOf', 'user _id avatar')
   return successResponse(req, res, profile);
 });
 
@@ -47,7 +47,9 @@ const getAllTraineesProfile = asyncHandler(async (req, res, next) => {
     }
     return successResponse(req, res, t);
   }
-  else return new ErrorResponse(`no profiles`, 404)
+  else return next(
+    new ErrorResponse('no profiles', 401)
+  );
 });
 
 
@@ -56,8 +58,6 @@ const getAllTraineesProfile = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const createProfile = asyncHandler(async (req, res, next) => {
   let profile = null;
-
-  console.log('req.body', req.body);
 
   if (req.user.profile_id) {
     profile = await Profile.findById(req.user.profile_id);
@@ -203,7 +203,6 @@ const createTraineeProfile = asyncHandler(async (req, res, next) => {
     );
   }
   let testExistUser = await User.findById(req.params.id);
-  console.log('testExistUser', testExistUser);
   if (!testExistUser) {
     return next(
       new ErrorResponse(`The user not exist`, 404));
@@ -214,7 +213,6 @@ const createTraineeProfile = asyncHandler(async (req, res, next) => {
     try {
       let data = await User.findByIdAndUpdate(req.params.id, { profile_id: profileFriend._id });
       if (data) {
-        console.log(data);
         data = await Profile.findByIdAndUpdate(req.user.profile_id, { $addToSet: { trainerOf: req.params._id } });
         if (data) {
           successResponse(req, res, profileFriend);
@@ -224,7 +222,6 @@ const createTraineeProfile = asyncHandler(async (req, res, next) => {
       else return next(new ErrorResponse(`filed update trainee`), 402);
     }
     catch (e) {
-      console.log(e);
       return next(new ErrorResponse(`error catch`, 402))
     }
   }

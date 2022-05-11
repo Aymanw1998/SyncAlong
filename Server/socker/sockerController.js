@@ -57,13 +57,41 @@ const socker = (server) => {
     socket.on('joinUser', (from, to, roomId, callback) => {
       socket.join(roomId);
       joinUser(from, roomId);
-      // let users = getUsersInRoom(roomId);
-      let users = getUsers();
+      let users = getUsersInRoom(roomId);
+      //let users = getUsers();
       //callback(users)
-      let res = from;
+      let res = users;
       console.log('responsRoomId', users);
       io.to(roomId).emit("responsRoomId", res);
     });
+
+    /*******************************************************************
+*	Function Name	: webRTC signaling server
+*	Description 	: Server which handles the offer and answer request 
+********************************************************************/
+    socket.on('sdp', data => {
+      console.log(data);
+      socket.to(data.to).emit('sdp', data);
+    });
+
+    socket.on('offer', data => {
+      //console.log(data.sdp);
+      socket.to(data.to).emit('getOffer', { sdp: data.sdp, offerSendID: data.offerSendID, offerSendEmail: data.offerSendEmail });
+    });
+
+    socket.on('answer', data => {
+      //console.log(data.sdp);
+      socket.to(data.answerReceiveID).emit('getAnswer', { sdp: data.sdp, answerSendID: data.answerSendID });
+    });
+
+    socket.on('candidate', data => {
+      //console.log(data.candidate);
+      socket.to(data.candidateReceiveID).emit('getCandidate', { candidate: data.candidate, candidateSendID: data.candidateSendID });
+    })
+    /*******************************************************************
+    *	Function Name	: webRTC signaling server
+    *	Description 	: Server which handles the offer and answer request 
+    ********************************************************************/
 
     socket.on("callUser", ({ userToCall, signalData, from, name }) => {
       io.to(userToCall).emit("callUser", { signal: signalData, from, name });
@@ -75,16 +103,15 @@ const socker = (server) => {
       io.to(yourSocketId).emit("calltoTrainee", data);
     });
 
-
     socket.on("calltoTraineeQuickMeeting", data => {
       console.log('calltoTraineeQuickMeeting', data);
       let quickMeeting = data.quickMeeting
       io.to(data.yourSocketId).emit("calltoTraineeQuickMeeting", quickMeeting);
     });
 
-    socket.on("ourDelay", data => {
-      io.to(data.to).emit("ourDelay", data.delay);
-    });
+    // socket.on("ourDelay", data => {
+    //   io.to(data.to).emit("ourDelay", data.delay);
+    // });
 
     socket.on("answerCall", (data) => {
       io.to(data.to).emit("callAccepted", data.signal, data.start_delay)
@@ -98,11 +125,11 @@ const socker = (server) => {
     ///test for Eyal -passing data per frames
     //Each user sends to the server his information. The server maintains a list of points 
     //and forwards a synchronization calculation based on recent times received from both users
-    socket.on("sendPosesByPeers", async (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
-      console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId);
+    socket.on("sendPosesByPeers", async (data, mySocketId, yourSocketId, trainer, activity, roomId, frameNum) => {
+      //  console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
       let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
 
-      console.log('dataToSync', dataToSync, new Date());
+      console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
       if (dataToSync) {
         //sync alg
         console.log(" before sendPosesByPeers", new Date());
@@ -181,10 +208,33 @@ const socker = (server) => {
       io.to(data.yourSocketId).emit("t", id);
     });
 
+    socket.on("t-trainer", (data) => {
+      let id = true
+      console.log('t-trainer', data);
+      const users = getUsersInRoom(data.roomId);
+      console.log(users);
+      users.map(user => {
+        console.log(user.socketId, socket.id);
+        if (user.socketId !== socket.id) {
+          console.log('t', user.socketId);
+          io.to(user.socketId).emit("t", id);
+          return;
+        }
+      })
+      io.to(data.yourSocketId).emit("t-trainer", id);
+    });
+
+
     socket.on("meetingComplited", (data) => {
       console.log(data);
       console.log('meetingComplited', data.to);
       io.to(data.to).emit("meetingComplited", data);
+    });
+
+
+    socket.on("updateUpcomingMeeting", (data) => {
+      console.log('updateUpcomingMeeting', data);
+      io.to(data.to).emit("updateUpcomingMeeting", data);
     });
 
     socket.on("error", (err) => {
@@ -200,16 +250,15 @@ const socker = (server) => {
       io.to(meetingId).emit("closeRoom", meetingId);
     });
 
-    socket.on("dataToReconect", data => {
-      console.log('reconect userId', data);
-      io.to(data.yourSocketId).emit("dataToReconect", data);
-    });
+    // socket.on("dataToReconect", data => {
+    //   console.log('reconect userId', data);
+    //   io.to(data.yourSocketId).emit("dataToReconect", data);
+    // });
 
-    socket.on("traineeReconect", trainee => {
-      console.log('reconect userId', trainee);
-      io.to(trainee).emit("traineeReconect", trainee);
-    });
-
+    // socket.on("traineeReconect", trainee => {
+    //   console.log('reconect userId', trainee);
+    //   io.to(trainee).emit("traineeReconect", trainee);
+    // });
 
     socket.on("reconect", (userId, roomId) => {
       addUser(userId, socket.id, roomId); //Resets the new socket associated with the user
@@ -223,7 +272,6 @@ const socker = (server) => {
       //case user close the room and another is in the room waiting for his to reconect
       io.to(roomId).emit("reconect", users);
     });
-
 
     socket.on("disconnectLogout", (userId) => {
       //handele when clicked on logout

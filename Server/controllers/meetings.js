@@ -32,9 +32,6 @@ const getMeetings = asyncHandler(async (req, res, next) => {
 
 //filter to get the meeting thet are in the futcer 
 const machDates = (date, now) => {
-  // console.log('now', now);
-  // console.log('date', date);
-
   if (date.getDate() == now.getDate()) {
     if (date.getHours() < now.getHours()) { //-2 becose if z indwx in date
       return false;
@@ -57,17 +54,14 @@ const getFutureMeetings = asyncHandler(async (req, res, next) => {
   }
   let meetings = null;
   let now = new Date();
-  // console.log(now.getFullYear(), now.getMonth(), now.getDate());
   meetings = await Meeting.find({ tariner: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
   if (meetings.length === 0 || meetings === null) {
-    console.log('in trainee');
     meetings = await Meeting.find({ trainee: req.user._id, date: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()) } }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
   }
   if (meetings.length === 0 || meetings === null)
     return successResponse(req, res, null);
   else {
     meetings = meetings.filter(i => machDates(i.date, now))
-    console.log(meetings);
     meetings = meetings.filter(i => i.urlRoom === undefined)
     return successResponse(req, res, meetings);
   }
@@ -83,10 +77,9 @@ const getMeeting = asyncHandler(async (req, res, next) => {
 
 const getActiveMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
-  console.log('req.user.role ', req.user.role);
   if (req.user.role === 'trainer')
     meeting = await Meeting.find({ tariner: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
-  else  //console.log('in trainee');
+  else
     meeting = await Meeting.find({ trainee: req.user._id, status: true }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
 
   if (meeting === null || meeting.length === 0)
@@ -98,7 +91,7 @@ const getComplitedMeetings = asyncHandler(async (req, res, next) => {
   let meetings = null;
   if (req.user.role === 'trainer')
     meetings = await Meeting.find({ tariner: req.user._id, status: false }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
-  else  //console.log('in trainee');
+  else
     meetings = await Meeting.find({ trainee: req.user._id, status: false }).populate('tariner trainee', '_id user role avatar').sort({ date: 1 })
 
   if (meetings === null || meetings.length === 0)
@@ -110,7 +103,6 @@ const getComplitedMeetings = asyncHandler(async (req, res, next) => {
 // @access  Private 
 const getCustomActivities = asyncHandler(async (req, res, next) => {
   const myProfile = await Profile.findById(req.user.profile_id);
-  console.log(myProfile);
   let isAuthorize = await authorize(req.params.id, myProfile.trainerOf);
   if (!isAuthorize) {
     return next(
@@ -123,12 +115,10 @@ const getCustomActivities = asyncHandler(async (req, res, next) => {
     yourProfile = await Profile.findById(you.profile_id);
 
   let unique = myProfile.limitations;
-  console.log('unique', unique);
   if (yourProfile) {
     let limits = myProfile.limitations.concat(yourProfile.limitations);
     unique = [...new Set(limits)];
   }
-  console.log('limits', unique);
   let ourActivitiesChoice = tailoredActivities(unique);
   return successResponse(req, res, ourActivitiesChoice);
 });
@@ -215,7 +205,6 @@ const setRandomActivities = (options) => {
     random_list.push(randon_action);
   }
 
-  console.log(random_list);
   return random_list;
 }
 
@@ -223,7 +212,6 @@ const setRandomActivities = (options) => {
 // @route   POST /api/meetings/
 // @access  Private with token
 const createMeeting = asyncHandler(async (req, res, next) => {
-  console.log('req.body create', req.body);
   //body: name, trainee(id), date(no must), room (name/id)
   //date : [y, m, d, h, m]
   //when calling creact -MUSt do a call for getCustomActivities fist - from that the user chose the activityies
@@ -277,7 +265,6 @@ const createMeeting = asyncHandler(async (req, res, next) => {
     tariner: { _id: req.user._id, user: req.user.user, avatar: req.user.avatar, role: req.user.role },
     trainee: { _id: req.body.trainee, user: participantUser.user, avatar: participantUser.avatar, role: participantUser.role }
   }
-  console.log('meeting', m2);
   await Profile.findByIdAndUpdate(myProfile._id, {
     $push: { meetings: meeting._id }
   });
