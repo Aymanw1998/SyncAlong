@@ -23,7 +23,7 @@ const socker = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`user conectted! socket= ${socket.id}`.green.bold);
+    //console.log(`user conectted! socket= ${socket.id}`.green.bold);
     const socketId = socket.id;
     const users = getUsers();
     io.to(socketId).emit("connected", socketId, users);
@@ -33,24 +33,24 @@ const socker = (server) => {
       addUser(user_id, socket.id, room_id); //Resets the new socket associated with the user
       let users = getUsers();
       let user = getUser(user_id);
-      console.log('added', user);
-      console.log(`num of users in: ${users.length}`.green.bold);
-      console.log(users);
+      //console.log('added', user);
+      //console.log(`num of users in: ${users.length}`.green.bold);
+      //console.log(users);
       io.emit("getNewUserAddToApp", user);
     });
 
     socket.on('me', (user_id) => {
-      console.log('user_id', user_id);
-      console.log('aalll', getUsers());
+      //console.log('user_id', user_id);
+      //console.log('aalll', getUsers());
       let user = getUser(user_id);
-      console.log('userrrrr', user);
+      //console.log('userrrrr', user);
       io.emit("mySocketId", user);
       // io.emit("yourSocketId", user);
     });
 
     socket.on('getSocketId', (user_id, callback) => {
       let user = getUser(user_id);
-      console.log('userrrrr', user_id, user);
+      //console.log('userrrrr', user_id, user);
       callback(user)
     });
 
@@ -61,7 +61,7 @@ const socker = (server) => {
       //let users = getUsers();
       //callback(users)
       let res = users;
-      console.log('responsRoomId', users);
+      //console.log('responsRoomId', users);
       io.to(roomId).emit("responsRoomId", res);
     });
 
@@ -70,13 +70,13 @@ const socker = (server) => {
     });
 
     socket.on("calltoTrainee", yourSocketId => {
-      console.log('calltoTrainee');
+      //console.log('calltoTrainee');
       let data = true;
       io.to(yourSocketId).emit("calltoTrainee", data);
     });
 
     socket.on("calltoTraineeQuickMeeting", data => {
-      console.log('calltoTraineeQuickMeeting', data);
+      //console.log('calltoTraineeQuickMeeting', data);
       let quickMeeting = data.quickMeeting
       io.to(data.yourSocketId).emit("calltoTraineeQuickMeeting", quickMeeting);
     });
@@ -94,15 +94,15 @@ const socker = (server) => {
     //Each user sends to the server his information. The server maintains a list of points 
     //and forwards a synchronization calculation based on recent times received from both users
     socket.on("sendPosesByPeers", async (data, mySocketId, yourSocketId, trainer, activity, roomId, frameNum) => {
-      //  console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
+      ////console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
       let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
 
-      console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
+      //console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
       if (dataToSync) {
         //sync alg
-        console.log(" before sendPosesByPeers", new Date());
+        //console.log(" before sendPosesByPeers", new Date());
         let sync_score = procrustes_analysis(dataToSync);
-        console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
+        //console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
         io.to(roomId).emit("resivingSyncScoure", sync_score);
 
         //save in db of both usesr
@@ -123,9 +123,9 @@ const socker = (server) => {
         you: { poses: [{ x: -2, y: -1.5 }, { x: -4, y: -3 }] }
       }
       // let sync_score = angles_between_joints(d);
-      console.log(" before sendPosesByPeers", new Date());
-      console.log('sync_angals', sync_score);
-      console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
+      //console.log(" before sendPosesByPeers", new Date());
+      //console.log('sync_angals', sync_score);
+      //console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
       //send back to bouth in room
       io.to(data.roomId).emit("syncScore", sync_score);
 
@@ -137,38 +137,38 @@ const socker = (server) => {
 
     socket.on("sendNotification", (data) => {
       let notification = data.notification;
-      console.log('notification', notification);
+      //console.log('notification', notification);
       io.to(data.roomId).emit("notification", notification);
     });
 
     socket.on("statePeer", (data) => {
       let state = data.state;
-      console.log('statePeer', state, 'send to you - ', data.yourSocketId);
+      //console.log('statePeer', state, 'send to you - ', data.yourSocketId);
       io.to(data.yourSocketId).emit("statePeer", state);
     });
 
     socket.on("peer1inFrame", (yourSocketId) => {
-      console.log('peer1inFrame');
+      //console.log('peer1inFrame');
       io.to(yourSocketId).emit("peer1inFrame", yourSocketId);
     });
 
     socket.on("accseptScheduleMeetingCall", (yourSocketId) => {
-      console.log('accseptScheduleMeetingCall', yourSocketId);
+      //console.log('accseptScheduleMeetingCall', yourSocketId);
       let id = true
       io.to(yourSocketId).emit("accseptScheduleMeetingCall", id);
     });
 
     socket.on("t", (data) => {
-      console.log(data);
-      console.log('t', data.yourSocketId);
+      //console.log(data);
+      //console.log('t', data.yourSocketId);
       let id = true
-      console.log('socket undifined', data.roomId);
+      //console.log('socket undifined', data.roomId);
       const users = getUsersInRoom(data.roomId);
-      console.log(users);
+      //console.log(users);
       users.map(user => {
-        console.log(user.socketId, socket.id);
+        //console.log(user.socketId, socket.id);
         if (user.socketId !== socket.id) {
-          console.log('t', user.socketId);
+          //console.log('t', user.socketId);
           io.to(user.socketId).emit("t", id);
           return;
         }
@@ -178,13 +178,13 @@ const socker = (server) => {
 
     socket.on("t-trainer", (data) => {
       let id = true
-      console.log('t-trainer', data);
+      //console.log('t-trainer', data);
       const users = getUsersInRoom(data.roomId);
-      console.log(users);
+      //console.log(users);
       users.map(user => {
-        console.log(user.socketId, socket.id);
+        //console.log(user.socketId, socket.id);
         if (user.socketId !== socket.id) {
-          console.log('t', user.socketId);
+          //console.log('t', user.socketId);
           io.to(user.socketId).emit("t", id);
           return;
         }
@@ -194,48 +194,48 @@ const socker = (server) => {
 
 
     socket.on("meetingComplited", (data) => {
-      console.log(data);
-      console.log('meetingComplited', data.to);
+      //console.log(data);
+      //console.log('meetingComplited', data.to);
       io.to(data.to).emit("meetingComplited", data);
     });
 
 
     socket.on("updateUpcomingMeeting", (data) => {
-      console.log('updateUpcomingMeeting', data);
+      //console.log('updateUpcomingMeeting', data);
       io.to(data.to).emit("updateUpcomingMeeting", data);
     });
 
     socket.on("error", (err) => {
-      console.log(`Error socket server: ${err}`);
+      //console.log(`Error socket server: ${err}`);
     });
 
     socket.on("closeRoom", (meetingId) => {
-      console.log('closeRoom', meetingId);
+      //console.log('closeRoom', meetingId);
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
-      console.log('closeRoom', meetingId);
+      //console.log('closeRoom', meetingId);
       closeRoom(meetingId);
       io.to(meetingId).emit("closeRoom", meetingId);
     });
 
     // socket.on("dataToReconect", data => {
-    //   console.log('reconect userId', data);
+    // //console.log('reconect userId', data);
     //   io.to(data.yourSocketId).emit("dataToReconect", data);
     // });
 
     // socket.on("traineeReconect", trainee => {
-    //   console.log('reconect userId', trainee);
+    // //console.log('reconect userId', trainee);
     //   io.to(trainee).emit("traineeReconect", trainee);
     // });
 
     socket.on("reconect", (userId, roomId) => {
       addUser(userId, socket.id, roomId); //Resets the new socket associated with the user
-      console.log('reconect userId', userId);
+      //console.log('reconect userId', userId);
       roomId && socket.join(roomId);
       let user = getUser(userId);
       let users = getUsersInRoom(roomId);
-      console.log('reconect user', user);
-      console.log('all users in room', roomId, users)
+      //console.log('reconect user', user);
+      //console.log('all users in room', roomId, users)
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
       io.to(roomId).emit("reconect", users);
@@ -243,11 +243,11 @@ const socker = (server) => {
 
     socket.on("disconnectLogout", (userId) => {
       //handele when clicked on logout
-      console.log('userId', userId);
+      //console.log('userId', userId);
       let user_disconrct = null
       if (userId) user_disconrct = getUser(userId);
       if (user_disconrct) {
-        console.log(`a user disconnected! socket= ${user_disconrct.socketId}`.red.underline.bold);
+        //console.log(`a user disconnected! socket= ${user_disconrct.socketId}`.red.underline.bold);
         let user_in_seeion = removeUser(user_disconrct.socketId);
         if (user_in_seeion) { //notiffy the roomId
           let userId = user_in_seeion.userId;
@@ -263,17 +263,18 @@ const socker = (server) => {
       console.log(`reason ====> ${reason}`.yellow.bold);
 
       let user = getUserBySocketId(socket.id);
-      console.log('user ', user);
+      //console.log('user ', user);
       if (user === null) return;
-      if (reason === "ping timeout") {
-        console.log('ocket.id', socket.id);
+      if (reason/* === "ping timeout"*/) {
+        //console.log('ocket.id', socket.id);
         io.to(user.roomId).emit("disconnected", reason);
       }
-
+      console.log(`removeSocket ${socket.id}`.red.bold);
       let user_in_seeion = removeUser(socket.id);
-
+      console.log(`after removeSocket ${socket.id}`.red.bold);
       if (user_in_seeion) { //notiffy the roomId
         let userId = user_in_seeion.userId;
+        console.log(`call to client`.red.bold);
         io.to(user_in_seeion.roomId).emit("userLeft", userId, reason);
       }
       else   //else this user has roomId=undifind (retuend null) so no need to notify to anyone he left 

@@ -9,7 +9,7 @@ const addUser = (userId, socketId, roomId) => {
       return;
     }
   });
-  console.log('add', userId, socketId, roomId);
+  //console.log('add', userId, socketId, roomId);
   //add user to array only if he is not there
   let mediapipe = [];
   !users.some((user) => user.userId === userId) &&
@@ -87,7 +87,7 @@ const pushMediaPipe = (data, mySocketId, yourSocketId, trainer, activity, roomId
   users.find(user => {
     if (user.socketId == mySocketId) {
       user.mediapipe.push(data);
-      console.log('user', user);
+      // console.log('user', user);
     }
   })
 
@@ -100,7 +100,7 @@ const pushMediaPipe = (data, mySocketId, yourSocketId, trainer, activity, roomId
       if (user.socketId == yourSocketId)
         found_user = user;
     });
-    console.log('trainee-P2', found_user);
+    // console.log('trainee-P2', found_user);
 
     while (!found) {
       if (found_user && found_user.mediapipe.length >= 2) {
