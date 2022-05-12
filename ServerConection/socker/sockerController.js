@@ -65,34 +65,6 @@ const socker = (server) => {
       io.to(roomId).emit("responsRoomId", res);
     });
 
-    /*******************************************************************
-*	Function Name	: webRTC signaling server
-*	Description 	: Server which handles the offer and answer request 
-********************************************************************/
-    socket.on('sdp', data => {
-      console.log(data);
-      socket.to(data.to).emit('sdp', data);
-    });
-
-    socket.on('offer', data => {
-      //console.log(data.sdp);
-      socket.to(data.to).emit('getOffer', { sdp: data.sdp, offerSendID: data.offerSendID, offerSendEmail: data.offerSendEmail });
-    });
-
-    socket.on('answer', data => {
-      //console.log(data.sdp);
-      socket.to(data.answerReceiveID).emit('getAnswer', { sdp: data.sdp, answerSendID: data.answerSendID });
-    });
-
-    socket.on('candidate', data => {
-      //console.log(data.candidate);
-      socket.to(data.candidateReceiveID).emit('getCandidate', { candidate: data.candidate, candidateSendID: data.candidateSendID });
-    })
-    /*******************************************************************
-    *	Function Name	: webRTC signaling server
-    *	Description 	: Server which handles the offer and answer request 
-    ********************************************************************/
-
     socket.on("callUser", ({ userToCall, signalData, from, name }) => {
       io.to(userToCall).emit("callUser", { signal: signalData, from, name });
     });
@@ -108,10 +80,6 @@ const socker = (server) => {
       let quickMeeting = data.quickMeeting
       io.to(data.yourSocketId).emit("calltoTraineeQuickMeeting", quickMeeting);
     });
-
-    // socket.on("ourDelay", data => {
-    //   io.to(data.to).emit("ourDelay", data.delay);
-    // });
 
     socket.on("answerCall", (data) => {
       io.to(data.to).emit("callAccepted", data.signal, data.start_delay)

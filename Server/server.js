@@ -94,8 +94,8 @@ app.use(errorHandler);
 
 //socket connection
 const httpServer = http.createServer(app)
-const socker = require('./socker');
-socker(httpServer);
+// const socker = require('./socker');
+// socker(httpServer);
 
 //lisining....
 const PORT = process.env.PORT || 5000;
