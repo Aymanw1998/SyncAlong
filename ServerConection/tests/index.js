@@ -1,5 +1,7 @@
 const { procrustes_analysis } = require('../syncAlgorithm/procrustes_analysis');
 const { shapeSimilarity } = require('../syncAlgorithm/step1/shapeSimilarity');
+const { angles_between_joints } = require('../syncAlgorithm/angles_between_joints');
+
 
 const testLefts = (ar1, ar2) => {
     let curve1 = [ar1[12], ar1[14], ar1[16]]
@@ -28,6 +30,15 @@ const testwithActive = (ar1, ar2, a) => {
     console.log('procrustes_analysis', similarity);
 }
 
+const testAngels = (ar1, ar2, a) => {
+    let data = {
+        me: { poses: ar1 },
+        you: { poses: ar2 },
+        activity: a
+    }
+    const similarity = angles_between_joints(data);
+}
+
 module.exports = {
-    testLefts, testRights, testwithActive
+    testLefts, testRights, testwithActive, testAngels
 };

@@ -7,12 +7,6 @@ let rotations = 10;
 let restrictRotationAngle = Math.PI;
 let checkRotations = true;
 
-// let ShapeSimilarityOpts = {
-//   estimationPoints,
-//   checkRotations, //?: boolean;
-//   rotations, //?: number;
-//   restrictRotationAngle, //?: number;
-// }
 
 /**
  * Estimate how similar the shapes of 2 curves are to each
@@ -33,7 +27,7 @@ let options = {
 const shapeSimilarity = (
   curve1,
   curve2,
-  options
+  restrictRotationAngle
 ) => {
   if (Math.abs(restrictRotationAngle) > Math.PI) {
     throw new Error('restrictRotationAngle cannot be larger than PI');
@@ -80,9 +74,9 @@ const shapeSimilarity = (
   let minFrechetDist = Infinity;
   // check some other thetas here just in case the procrustes theta isn't the best rotation
   thetasToCheck.forEach(theta => {
-    //const rotatedCurve1 = rotateCurve(normalizedCurve1, theta);
-    //const dist = frechetDistance(rotatedCurve1, normalizedCurve2);
-    const dist = frechetDistance(normalizedCurve1, normalizedCurve2);
+    const rotatedCurve1 = rotateCurve(normalizedCurve1, theta);
+    const dist = frechetDistance(rotatedCurve1, normalizedCurve2);
+    // const dist = frechetDistance(normalizedCurve1, normalizedCurve2);
     if (dist < minFrechetDist) minFrechetDist = dist;
   });
 

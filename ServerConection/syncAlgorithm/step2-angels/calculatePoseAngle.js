@@ -1,32 +1,29 @@
-let userPoseAngle = null;
-let down;
-let repsCounter = 0;
-
-// * calculating the angles in the user pose
-const calculatePoseAngle = (a, b, c) => {
-    let radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x) // * fetching the radians using the atan2 function 
+const angleCalculation = (a, b, c) => {
+    //Calculates the angle ABC (in radians) 
+    let AB = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+    let BC = Math.sqrt(Math.pow(b.x - c.x, 2) + Math.pow(b.y - c.y, 2));
+    let AC = Math.sqrt(Math.pow(c.x - a.x, 2) + Math.pow(c.y - a.y, 2));
+    let radians = Math.acos((BC * BC + AB * AB - AC * AC) / (2 * BC * AB));
+    //convert to degree 
     let angle = radians * (180 / Math.PI) // * calculating the angle from the radian
-    // need to provide dynamic values for angles as per requirement later along with the number of reps.
+
     if (angle > 180) { // * if the angle is greater than 180, then it is negative so changing it back to positive or an actual angle possible for a human being, lol..
         angle = 360 - angle
     }
-    if (angle > 0 && angle < 180) { // * if the angle is positive, then it is a positive angle
-        // console.log(angle.toFixed(2), "currentAngle");
-    }
-    userPoseAngle = angle.toFixed(2);
-    calculateReps(userPoseAngle);
+    return angle;
 }
-const calculateReps = (angle) => {
-    // console.log(angle);
-    if (angle >= 160) {
-        down = true;
-    }
-    if (angle <= 40 && down) {
-        down = false;
-        // setRepCounter(repCounter + 1);
-        repsCounter += 1;
-        console.log(repsCounter, "repsCounter");
-    }
-    // console.log('out');
-    // console.log(repsCounter, "repsCounter");
+// * calculating the angles in the user pose
+const calculatePoseAngle = (poses) => {
+    //i know each poses has a length of 3 points 
+    console.log('0', poses[0]);
+    console.log('1', poses[1]);
+    console.log('2', poses[2]);
+
+    let angle = angleCalculation(poses[0], poses[1], poses[2]);
+    console.log('angle', angle);
+    return angle;
 }
+
+module.exports = {
+    calculatePoseAngle
+};

@@ -34,36 +34,58 @@ const similarityAvarag = (shortestArr, youPoses, mePoses) => {
 }
 
 const procrustes_analysis = (data) => {
-    console.log('data1', data);
-
     if (data.you.poses === undefined || data.me.poses === undefined) return;
     //filter peers by the curr activity and key poits
     data = filter_poses_curr_action(data.activity, data.me.poses, data.you.poses);
     if (!data) return;
-    // console.log('data', data);
+
+    // let shortestType, shortestArr;
+    // data.me.poses.length < data.you.poses.length ? shortestType = 'me' : shortestType = 'you'
+    // shortestType == 'me' ? shortestArr = data.me.poses : shortestArr = data.you.poses
 
 
-    let shortestType, shortestArr;
-    data.me.poses.length < data.you.poses.length ? shortestType = 'me' : shortestType = 'you'
-    shortestType == 'me' ? shortestArr = data.me.poses : shortestArr = data.you.poses
-
-    let similarity = similarityAvarag(shortestArr, data.you.poses, data.me.poses);  //of parts uper or lower
+    //when bout side1 and sid2 
+    //then side1 ==left side
+    //side2 == right side 
+    //if only side1 then it can be ethr one 
+    let similarity = shapeSimilarity(data.you.side1.poses, data.me.side1.poses, Math.PI / 6); //Rotates up to a third of its axis //https://he.wikipedia.org/wiki/%D7%A8%D7%93%D7%99%D7%90%D7%9F
+    let similarity_side2 = null;
+    if (data.you.side2 && data.me.side2) {
+        similarity_side2 = shapeSimilarity(data.you.side2.poses, data.me.side2.poses, Math.PI / 6); //Rotates up to a third of its axis
+    }
+    let total_similarity_avg = similarity;
+    if (similarity >= 0 && similarity_side2 !== null && similarity_side2 >= 0) {
+        total_similarity_avg = (similarity + similarity_side2) / 2
+    }
+    console.log('similarity', similarity, 'similarity_side2', similarity_side2, 'total_similarity_avg', total_similarity_avg);
 
     //whan it isnot all body activity
-    if (!data.me_upper || !data.you_upper) return similarity;
-    if (!data.me_upper?.poses || !data.you_upper?.poses) return similarity;
-    else {
-        //console.log('elssseeee   bouttttt    similarity????');
-        //whan it is all body activity then do also the uper part , in this case similarity===lower part
-        data.me_upper.poses.length < data.you_upper.poses.length ? shortestType = 'me' : shortestType = 'you'
-        shortestType == 'me' ? shortestArr = data.me_upper.poses : shortestArr = data.you_upper.poses;
+    // me_bottom, you_bottom 
+    if (!data.me_bottom || !data.you_bottom) return total_similarity_avg;
+    if (!data.me_bottom?.side1.poses || !data.you_bottom?.side1.poses) return total_similarity_avg;
 
-        if (data.me_upper.poses && data.you_upper.poses) {
-            let similarity_upper = similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
-            console.log('all body similarity_upper', similarity_upper, "similarityAvarage_bouttem", similarity);
-            return similarity_upper * 0.8 + similarity * 0.2; // upper is 80% and lower 20% of the total value
+    else {
+        //whan it is all body activity then do also the uper part , in this case similarity===lower part
+        // data.me_upper.poses.length < data.you_upper.poses.length ? shortestType = 'me' : shortestType = 'you'
+        // shortestType == 'me' ? shortestArr = data.me_upper.poses : shortestArr = data.you_upper.poses;
+        let similarity_bottom_side1 = null;
+        let similarity_bottom_side2 = null;
+
+        if (data.me_bottom?.side1.poses && data.you_bottom?.side1.poses && data.me_bottom?.side2.poses && data.you_bottom?.side2.poses) {
+            similarity_bottom_side1 = shapeSimilarity(data.you_bottom.side1.poses, data.me_bottom.side1.poses, Math.PI / 6); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
+            similarity_bottom_side2 = shapeSimilarity(data.you_bottom.side2.poses, data.me_bottom.side2.poses, Math.PI / 6); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
+
+            let similarity_bottom_avg = similarity_bottom_side1;
+            if (similarity_bottom_side1 && similarity_bottom_side1 >= 0
+                && similarity_bottom_side2 && similarity_bottom_side2 >= 0) {
+                similarity_bottom_avg = (similarity_bottom_side1 + similarity_bottom_side2) / 2;
+            }
+
+            console.log('similarity_bottom_side1', similarity_bottom_side1, "similarity_bottom_side2", similarity_bottom_side2, 'similarity_bottom_avg', similarity_bottom_avg);
+
+            return total_similarity_avg * 0.8 + similarity_bottom_avg * 0.2; // upper is 80% and lower 20% of the total value
         }
-        else return similarity; //if noting else 
+        else return total_similarity_avg; //if noting else 
     }
 }
 

@@ -10,8 +10,8 @@ const upper_part = {
 }
 
 const bottom_part = {
-    left_leg: [25, 27, 29, 31],
-    right_leg: [26, 28, 30, 32]
+    left_leg: [23, 25, 27, 29],
+    right_leg: [24, 26, 28, 30]
 }
 
 //add activitys as gos.....
