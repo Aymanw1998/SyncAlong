@@ -80,8 +80,9 @@ const shapeSimilarity = (
   let minFrechetDist = Infinity;
   // check some other thetas here just in case the procrustes theta isn't the best rotation
   thetasToCheck.forEach(theta => {
-    const rotatedCurve1 = rotateCurve(normalizedCurve1, theta);
-    const dist = frechetDistance(rotatedCurve1, normalizedCurve2);
+    //const rotatedCurve1 = rotateCurve(normalizedCurve1, theta);
+    //const dist = frechetDistance(rotatedCurve1, normalizedCurve2);
+    const dist = frechetDistance(normalizedCurve1, normalizedCurve2);
     if (dist < minFrechetDist) minFrechetDist = dist;
   });
 

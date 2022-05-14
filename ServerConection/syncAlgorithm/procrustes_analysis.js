@@ -60,7 +60,7 @@ const procrustes_analysis = (data) => {
 
         if (data.me_upper.poses && data.you_upper.poses) {
             let similarity_upper = similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
-            //('all body similarity_upper', similarity_upper, "similarityAvarage_bouttem", similarity);
+            console.log('all body similarity_upper', similarity_upper, "similarityAvarage_bouttem", similarity);
             return similarity_upper * 0.8 + similarity * 0.2; // upper is 80% and lower 20% of the total value
         }
         else return similarity; //if noting else 

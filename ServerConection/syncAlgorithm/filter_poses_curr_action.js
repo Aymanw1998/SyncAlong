@@ -6,31 +6,6 @@
 */}
 const { bottom_part, upper_part, bottom_activities, upper_activities } = require('./points_parts');
 
-// const filterByKeyPoints = (pose_peer, parts) => {
-//     let is_null_arr = pose_peer.find(el => el === null);
-//     if (is_null_arr) {
-//         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
-//         return null;
-//     }
-
-//     let result = [];
-//     let poses = [];
-//     for (const i in pose_peer) { // [ [],[],[], null ]
-//         result = [];
-//         if (pose_peer[i] === null) {
-//             console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
-//             return null;
-//         }
-//         for (const j in parts) {
-//             let index = parts[j];
-//             console.log(index, i, 'peer');
-//             result.push(pose_peer[i][index]);
-//         }
-//         poses.push(result);
-//     }
-//     return poses;
-// }
-
 const filterByKeyPoints = (pose_peer, parts) => {
     let is_null_arr = pose_peer.find(el => el === null);
     if (is_null_arr) {
@@ -75,15 +50,17 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
 
 
     if ((in_upper && in_bottom) || (!in_upper && !in_bottom)) { //activity in all body parts 
+        console.log('dkdkdkdkdkkd');
         is_all_body = true;
         let all_parts_bottom = [];
         let all_parts_upper = [];
         all_parts_upper.push(...upper_part.left_hand)
         all_parts_upper.push(...upper_part.right_hand)
-        // all_parts_bottom.push(...[27]);
-        // all_parts_bottom.push(...[28])
         all_parts_bottom.push(...bottom_part.left_leg)
         all_parts_bottom.push(...bottom_part.right_leg)
+
+        all_parts_upper = [...new Set(all_parts_upper)];
+        all_parts_bottom = [...new Set(all_parts_bottom)];
 
         filtered_pose1 = filterByKeyPoints(pose_peer1, all_parts_bottom);
         filtered_pose2 = filterByKeyPoints(pose_peer2, all_parts_bottom);
@@ -91,6 +68,7 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_pose_2 = filterByKeyPoints(pose_peer2, all_parts_upper);
     }
     else if (in_upper && curr_activity.includes("left")) {
+        console.log('left in_upper', upper_part.left_hand);
         filtered_pose1 = filterByKeyPoints(pose_peer1, upper_part.left_hand);
         filtered_pose2 = filterByKeyPoints(pose_peer2, upper_part.left_hand);
     }
@@ -103,23 +81,30 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         let both_hands = []
         both_hands.push(...upper_part.left_hand)
         both_hands.push(...upper_part.right_hand)
+        // both_hands = [...new Set(both_hands)];
+        console.log('both_hands', both_hands);
         filtered_pose1 = filterByKeyPoints(pose_peer1, both_hands);
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_hands);
     }
     else if (bottom_part && curr_activity.includes("left")) {
+        console.log('left bottom_part', bottom_part.left_leg);
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.left_leg);
     }
     else if (bottom_part && curr_activity.includes("right")) {
+        console.log('right', bottom_part);
+
         filtered_pose1 = filterByKeyPoints(pose_peer1, bottom_part.right_leg);
         filtered_pose2 = filterByKeyPoints(pose_peer2, bottom_part.right_leg);
     }
     else if (bottom_part && !curr_activity.includes("right") && !curr_activity.includes("left")) {
+        console.log('allllllll', bottom_part);
+
         let both_legs = []
         both_legs.push(...bottom_part.left_leg)
         both_legs.push(...bottom_part.right_leg)
-        // both_legs.push(...[27]);
-        // both_legs.push(...[28])
+        console.log('allllllll-both_legs', both_legs);
+
         filtered_pose1 = filterByKeyPoints(pose_peer1, both_legs);
         filtered_pose2 = filterByKeyPoints(pose_peer2, both_legs);
     }
