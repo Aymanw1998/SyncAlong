@@ -7,7 +7,6 @@
 const { bottom_part, upper_part, bottom_activities, upper_activities } = require('./points_parts');
 
 const filterByKeyPoints = (pose_peer, parts) => {
-    console.log('parts', parts);
     let is_null_arr = pose_peer.find(el => el === null);
     if (is_null_arr) {
         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
@@ -178,10 +177,10 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         if (filtered_right_2_bottom.length !== 0) { you_bottom.side2 = { poses: filtered_right_2_bottom } }
     }
 
-    console.log('me', me);
-    console.log('you', you);
-    console.log('me_bottom', me_bottom);
-    console.log('you_bottom', you_bottom);
+    // console.log('me', me);
+    // console.log('you', you);
+    // console.log('me_bottom', me_bottom);
+    // console.log('you_bottom', you_bottom);
 
     if (!me || !you) return null;
     if (is_all_body) {

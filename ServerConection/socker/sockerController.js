@@ -76,7 +76,7 @@ const socker = (server) => {
     });
 
     socket.on("calltoTraineeQuickMeeting", data => {
-      //console.log('calltoTraineeQuickMeeting', data);
+      console.log('calltoTraineeQuickMeeting', data);
       let quickMeeting = data.quickMeeting
       io.to(data.yourSocketId).emit("calltoTraineeQuickMeeting", quickMeeting);
     });
@@ -97,7 +97,7 @@ const socker = (server) => {
       ////console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
       let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
 
-      //console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
+      console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
       if (dataToSync) {
         //sync alg
         //console.log(" before sendPosesByPeers", new Date());
@@ -210,12 +210,19 @@ const socker = (server) => {
     });
 
     socket.on("closeRoom", (meetingId) => {
-      //console.log('closeRoom', meetingId);
+      console.log('closeRoom', meetingId);
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
-      //console.log('closeRoom', meetingId);
       closeRoom(meetingId);
       io.to(meetingId).emit("closeRoom", meetingId);
+    });
+
+    socket.on("closeRoomByDeclining", (data) => {
+      console.log('closeRoomByDeclining', data);
+      //notify to the room about this action...
+      //case user close the room and another is in the room waiting for his to reconect
+      closeRoom(data.roomId);
+      io.to(data.yourSocketId).emit("closeRoomByDeclining", data);
     });
 
     // socket.on("dataToReconect", data => {
