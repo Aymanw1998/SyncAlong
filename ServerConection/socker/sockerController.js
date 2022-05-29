@@ -23,7 +23,7 @@ const socker = (server) => {
   });
 
   io.on('connection', (socket) => {
-    //console.log(`user conectted! socket= ${socket.id}`.green.bold);
+    console.log(`user conectted! socket= ${socket.id}`.green.bold);
     const socketId = socket.id;
     const users = getUsers();
     io.to(socketId).emit("connected", socketId, users);
@@ -35,7 +35,7 @@ const socker = (server) => {
       let user = getUser(user_id);
       //console.log('added', user);
       //console.log(`num of users in: ${users.length}`.green.bold);
-      //console.log(users);
+      console.log(users);
       io.emit("getNewUserAddToApp", user);
     });
 
@@ -61,7 +61,7 @@ const socker = (server) => {
       //let users = getUsers();
       //callback(users)
       let res = users;
-      //console.log('responsRoomId', users);
+      console.log('responsRoomId', users);
       io.to(roomId).emit("responsRoomId", res);
     });
 
@@ -94,15 +94,15 @@ const socker = (server) => {
     //Each user sends to the server his information. The server maintains a list of points 
     //and forwards a synchronization calculation based on recent times received from both users
     socket.on("sendPosesByPeers", async (data, mySocketId, yourSocketId, trainer, activity, roomId, frameNum) => {
-      ////console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
+      console.log("sendPosesByPeers", new Date(), mySocketId, yourSocketId, trainer, activity, roomId, frameNum);
       let dataToSync = pushMediaPipe(data, mySocketId, yourSocketId, trainer, activity, roomId);
 
       console.log('mySocketId', mySocketId, 'dataToSync', dataToSync);
       if (dataToSync) {
         //sync alg
-        //console.log(" before sendPosesByPeers", new Date());
+        console.log(" before sendPosesByPeers", new Date());
         let sync_score = procrustes_analysis(dataToSync);
-        //console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
+        console.log("after sendPosesByPeers", new Date(), 'sync_score send : ', sync_score);
         io.to(roomId).emit("resivingSyncScoure", sync_score);
 
         //save in db of both usesr
@@ -208,13 +208,12 @@ const socker = (server) => {
     socket.on("error", (err) => {
       //console.log(`Error socket server: ${err}`);
     });
-
     socket.on("closeRoom", (meetingId) => {
       console.log('closeRoom', meetingId);
       //notify to the room about this action...
       //case user close the room and another is in the room waiting for his to reconect
-      closeRoom(meetingId);
-      io.to(meetingId).emit("closeRoom", meetingId);
+      closeRoom(meetingId._id);
+      io.to(meetingId._id).emit("closeRoom", meetingId);
     });
 
     socket.on("closeRoomByDeclining", (data) => {
