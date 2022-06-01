@@ -64,29 +64,13 @@ const profiles = require('./routes/profiles');
 const recordings = require('./routes/recordings');
 const meetings = require('./routes/meetings');
 const syncScores = require('./routes/sync-scores');
+const syncPerformance = require('./routes/sync-info');
 app.use('/api/users', users);
 app.use('/api/profiles', profiles);
 app.use('/api/recordings', recordings);
 app.use('/api/meetings', meetings);
 app.use('/api/syncscores', syncScores);
-
-//uploud imgs to server (for avatar potos)
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "public/images");
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, file.originalname);
-//   },
-// });
-// const upload = multer({ storage: storage });
-// app.post("/api/upload", upload.single("img"), (req, res) => {
-//   try {
-//     return res.status(200).json("File uploded successfully");
-//   } catch (error) {
-//     console.error(error);
-//   }
-// });
+app.use('/api/syncperformance', syncPerformance);
 
 //must be after routes call
 //for catch 500-400 errors
@@ -104,7 +88,6 @@ httpServer.listen(
   PORT,
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.blue.bold)
 );
-
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
