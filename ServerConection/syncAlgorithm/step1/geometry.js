@@ -25,6 +25,7 @@ const pointDistance = (point1, point2) =>
 /**
  * calculate the length of the curve
  * param points
+ * d= squer( (x_first-x_last)^2 + (y_first-y_last)^2)
  */
 const curveLength = (points) => {
   let lastPoint = points[0];

@@ -46,8 +46,19 @@ const bottom_activities = [
 const center_part = [11, 12, 23, 24];
 const joints_keys = [13, 14, 25, 26]; //13:right-hand, 14:left-hand, 25:right-leg, 26:left-leg
 
+
+const getActivityBottom = (activity) => {
+    let b_arr = ['left-leg-up', 'right-leg-up', 'legs-both-up',
+        '90leging-right', '90leging-left']
+    let bottom = b_arr.find(el => el === activity);
+
+    if (bottom) return true;
+    else return false;
+}
+
 module.exports = {
     upper_part, bottom_part,
     upper_activities, bottom_activities,
-    center_part, joints_keys
+    center_part, joints_keys,
+    getActivityBottom
 };

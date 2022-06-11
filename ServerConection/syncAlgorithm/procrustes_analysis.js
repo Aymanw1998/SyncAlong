@@ -5,44 +5,47 @@
 */}
 const { shapeSimilarity } = require('./step1/shapeSimilarity');
 const { filter_poses_curr_action } = require('./filter_poses_curr_action');
+const { getActivityBottom } = require('./points_parts');
 
-const similarityAvarag = (shortestArr, youPoses, mePoses) => {
-    let curve_me_elment1, curve_you_elment1;
-    let similarityAvarage = 0;
-    let sum = 0;
-    let similarity;
 
-    for (const i in shortestArr) {
-        if (!youPoses || !mePoses) return; //iffff something wrong with passing data
+// const similarityAvarag = (shortestArr, youPoses, mePoses) => {
+//     let curve_me_elment1, curve_you_elment1;
+//     let similarityAvarage = 0;
+//     let sum = 0;
+//     let similarity;
 
-        curve_me_elment1 = mePoses[i];
-        curve_you_elment1 = youPoses[i];
+//     for (const i in shortestArr) {
+//         if (!youPoses || !mePoses) return; //iffff something wrong with passing data
 
-        //when one of users part isnt in the praim the the sync bettwn them is none == 0 
-        if (mePoses[i].visibility <= 0.6 || youPoses[i].visibility <= 0.6)
-            similarity = 0;
-        else
-            similarity = shapeSimilarity(curve_me_elment1, curve_you_elment1);
+//         curve_me_elment1 = mePoses[i];
+//         curve_you_elment1 = youPoses[i];
 
-        //console.log(i, similarity, ' curve_me_elment1', curve_me_elment1, 'curve_you_elment1:', curve_you_elment1);
-        sum = sum + similarity;
-        //console.log(i, ' procrustes_analysis', similarity, 'sum:', sum);
-    }
-    //console.log("similarityAvarage=sum /shortestArr.length", sum, shortestArr.length, "===", sum / shortestArr.length);
-    similarityAvarage = sum / shortestArr.length; //avarage for 1 sec of time series
-    return similarityAvarage;
-}
+//         //when one of users part isnt in the praim the the sync bettwn them is none == 0 
+//         if (mePoses[i].visibility <= 0.6 || youPoses[i].visibility <= 0.6)
+//             similarity = 0;
+//         else
+//             similarity = shapeSimilarity(curve_me_elment1, curve_you_elment1);
+
+//         //console.log(i, similarity, ' curve_me_elment1', curve_me_elment1, 'curve_you_elment1:', curve_you_elment1);
+//         sum = sum + similarity;
+//         //console.log(i, ' procrustes_analysis', similarity, 'sum:', sum);
+//     }
+//     //console.log("similarityAvarage=sum /shortestArr.length", sum, shortestArr.length, "===", sum / shortestArr.length);
+//     similarityAvarage = sum / shortestArr.length; //avarage for 1 sec of time series
+//     return similarityAvarage;
+// }
 
 const procrustes_analysis = (data) => {
+    let is_bottom = getActivityBottom(data.activity);
     if (data.you.poses === undefined || data.me.poses === undefined) return;
     //filter peers by the curr activity and key poits
     data = filter_poses_curr_action(data.activity, data.me.poses, data.you.poses);
     if (!data) return;
 
+    //console.log('data', data.you.side1.poses);
     // let shortestType, shortestArr;
     // data.me.poses.length < data.you.poses.length ? shortestType = 'me' : shortestType = 'you'
     // shortestType == 'me' ? shortestArr = data.me.poses : shortestArr = data.you.poses
-
 
     //when bout side1 and sid2 
     //then side1 ==left side
@@ -51,7 +54,8 @@ const procrustes_analysis = (data) => {
     let similarity = shapeSimilarity(data.you.side1.poses, data.me.side1.poses, Math.PI / 6); //Rotates up to a third of its axis //https://he.wikipedia.org/wiki/%D7%A8%D7%93%D7%99%D7%90%D7%9F
     let similarity_side2 = null;
     if (data.you.side2 && data.me.side2) {
-        similarity_side2 = shapeSimilarity(data.you.side2.poses, data.me.side2.poses, Math.PI / 6); //Rotates up to a third of its axis
+        if (is_bottom) similarity_side2 = shapeSimilarity(data.you.side2.poses, data.me.side2.poses, Math.PI / 12); //smaler routation :: (Math.PI / 12)*(180/Math.PI) =15 digri
+        else similarity_side2 = shapeSimilarity(data.you.side2.poses, data.me.side2.poses, Math.PI / 6); //Rotates up to a third of its axis ::(Math.PI /6)*(180/Math.PI) =30 digri
     }
     let total_similarity_avg = similarity;
     if (similarity >= 0 && similarity_side2 !== null && similarity_side2 >= 0) {
@@ -72,8 +76,8 @@ const procrustes_analysis = (data) => {
         let similarity_bottom_side2 = null;
 
         if (data.me_bottom?.side1.poses && data.you_bottom?.side1.poses && data.me_bottom?.side2.poses && data.you_bottom?.side2.poses) {
-            similarity_bottom_side1 = shapeSimilarity(data.you_bottom.side1.poses, data.me_bottom.side1.poses, Math.PI / 6); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
-            similarity_bottom_side2 = shapeSimilarity(data.you_bottom.side2.poses, data.me_bottom.side2.poses, Math.PI / 6); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
+            similarity_bottom_side1 = shapeSimilarity(data.you_bottom.side1.poses, data.me_bottom.side1.poses, Math.PI / 12); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
+            similarity_bottom_side2 = shapeSimilarity(data.you_bottom.side2.poses, data.me_bottom.side2.poses, Math.PI / 12); // similarityAvarag(shortestArr, data.me_upper.poses, data.you_upper.poses);
 
             let similarity_bottom_avg = similarity_bottom_side1;
             if (similarity_bottom_side1 && similarity_bottom_side1 >= 0
@@ -83,7 +87,7 @@ const procrustes_analysis = (data) => {
 
             console.log('similarity_bottom_side1', similarity_bottom_side1, "similarity_bottom_side2", similarity_bottom_side2, 'similarity_bottom_avg', similarity_bottom_avg);
 
-            return total_similarity_avg * 0.8 + similarity_bottom_avg * 0.2; // upper is 80% and lower 20% of the total value
+            return total_similarity_avg * 0.7 + similarity_bottom_avg * 0.3; // upper is 80% and lower 20% of the total value
         }
         else return total_similarity_avg; //if noting else 
     }

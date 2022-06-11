@@ -29,10 +29,15 @@ const procrustesNormalizeCurve = (
   const balancedCurve = rebalance
     ? rebalanceCurve(curve, { numPoints: estimationPoints })
     : curve;
+  // console.log('balancedCurve', balancedCurve);
   const meanX = arrAverage(balancedCurve.map(point => point.x));
   const meanY = arrAverage(balancedCurve.map(point => point.y));
   const mean = { x: meanX, y: meanY };
+
+  // Uniform scaling // RMSD 
+  //* d= squer( (x-x_avg)^2 + (y-y_avg)^2)
   const translatedCurve = balancedCurve.map(point => subtract(point, mean));
+  //avg of distances
   const scale = Math.sqrt(
     arrAverage(translatedCurve.map(({ x, y }) => x * x + y * y))
   );

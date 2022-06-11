@@ -20,7 +20,6 @@ const similarity = testAngels(both_hands_down, both_hands_up_90, "right-hand-up"
 *************************************************************************
  */
 
-
 // Load env vars
 dotenv.config({ path: './config/.env' });
 

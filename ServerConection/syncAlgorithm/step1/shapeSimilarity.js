@@ -76,10 +76,11 @@ const shapeSimilarity = (
   thetasToCheck.forEach(theta => {
     const rotatedCurve1 = rotateCurve(normalizedCurve1, theta);
     const dist = frechetDistance(rotatedCurve1, normalizedCurve2);
-    // const dist = frechetDistance(normalizedCurve1, normalizedCurve2);
+    // console.log('dist', dist);
     if (dist < minFrechetDist) minFrechetDist = dist;
   });
 
+  // console.log('minFrechetDist', minFrechetDist, Math.max(1 - minFrechetDist / (geoAvgCurveLen / Math.sqrt(2)), 0));
   // divide by Math.sqrt(2) to try to get the low results closer to 0
   return Math.max(1 - minFrechetDist / (geoAvgCurveLen / Math.sqrt(2)), 0);
 };
