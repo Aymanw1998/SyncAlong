@@ -25,22 +25,27 @@ const procrustesNormalizeCurve = (
   curve,
   options
 ) => {
+
+  //1.Translation
   const { rebalance = true, estimationPoints = 50 } = options;
   const balancedCurve = rebalance
     ? rebalanceCurve(curve, { numPoints: estimationPoints })
     : curve;
-  // console.log('balancedCurve', balancedCurve);
+  // console.log('balancedCurve', balancedCurve, balancedCurve.length);
   const meanX = arrAverage(balancedCurve.map(point => point.x));
   const meanY = arrAverage(balancedCurve.map(point => point.y));
   const mean = { x: meanX, y: meanY };
 
-  // Uniform scaling // RMSD 
+  //2.Uniform scaling // RMSD 
   //* d= squer( (x-x_avg)^2 + (y-y_avg)^2)
   const translatedCurve = balancedCurve.map(point => subtract(point, mean));
   //avg of distances
   const scale = Math.sqrt(
     arrAverage(translatedCurve.map(({ x, y }) => x * x + y * y))
   );
+  //console.log('scale', scale);
+
+  // each pount transform  to => ( (x1-(~x))/scale, (y1-(~y))/scale )
   return translatedCurve.map(point => ({
     x: point.x / scale,
     y: point.y / scale
@@ -64,6 +69,7 @@ const findProcrustesRotationAngle = (
     throw new Error('curve and relativeCurve must have the same length');
   }
 
+  // curve.map(({ x, y }, i) => { console.log(i, ": ", x, y) });
   const numerator = arrSum(
     curve.map(({ x, y }, i) => y * relativeCurve[i].x - x * relativeCurve[i].y)
   );
@@ -82,16 +88,16 @@ const findProcrustesRotationAngle = (
  * @param curve
  * @param relativeCurve
  */
-const procrustesNormalizeRotation = (
-  curve,
-  relativeCurve
-) => {
-  const angle = findProcrustesRotationAngle(curve, relativeCurve);
-  return rotateCurve(curve, angle);
-};
+// const procrustesNormalizeRotation = (
+//   curve,
+//   relativeCurve
+// ) => {
+//   const angle = findProcrustesRotationAngle(curve, relativeCurve);
+//   return rotateCurve(curve, angle);
+// };
 
 module.exports = {
-  procrustesNormalizeRotation,
+  // procrustesNormalizeRotation,
   procrustesNormalizeCurve,
   findProcrustesRotationAngle,
   ProcrustesNormalizeCurveOpts

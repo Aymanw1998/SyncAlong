@@ -32,6 +32,7 @@ const curveLength = (points) => {
   const pointsSansFirst = points.slice(1);
   return pointsSansFirst.reduce((acc, point) => {
     const dist = pointDistance(point, lastPoint);
+    // console.log('dist', point, lastPoint, '=', dist);
     lastPoint = point;
     return acc + dist;
   }, 0);
@@ -50,43 +51,6 @@ const extendPointOnLine = (p1, p2, dist) => {
   return { x: p2.x + norm * vect.x, y: p2.y + norm * vect.y };
 };
 
-let maxLen;
-let SubdivideCurveOpts = { maxLen }
-
-/**
- * Break up long segments in the curve into smaller segments of len maxLen or smaller
- * @param curve
- * @param options
- */
-const subdivideCurve = (
-  curve,
-  options
-) => {
-  const { maxLen = 0.05 } = options;
-  const newCurve = curve.slice(0, 1);
-  curve.slice(1).forEach(point => {
-    const prevPoint = newCurve[newCurve.length - 1];
-    const segLen = pointDistance(point, prevPoint);
-    if (segLen > maxLen) {
-      const numNewPoints = Math.ceil(segLen / maxLen);
-      const newSegLen = segLen / numNewPoints;
-      for (let i = 0; i < numNewPoints; i++) {
-        newCurve.push(
-          extendPointOnLine(point, prevPoint, -1 * newSegLen * (i + 1))
-        );
-      }
-    } else {
-      newCurve.push(point);
-    }
-  });
-  return newCurve;
-};
-
-let numPoints;
-let RebalanceCurveOpts = {
-  numPoints
-}
-
 /**
  * Redraw the curve using `numPoints` points equally spaced along the length of the curve
  * This may result in a slightly different shape than the original if `numPoints` is low
@@ -101,6 +65,7 @@ const rebalanceCurve = (
   const curveLen = curveLength(curve);
   const segmentLen = curveLen / (numPoints - 1);
   const outlinePoints = [curve[0]];
+  //console.log('curveLen', curveLen);
   const endPoint = arrLast(curve);
   const remainingCurvePoints = curve.slice(1);
   for (let i = 0; i < numPoints - 2; i++) {
@@ -143,10 +108,7 @@ module.exports = {
   curveLength,
   pointDistance,
   extendPointOnLine,
-  subdivideCurve,
   rebalanceCurve,
-  RebalanceCurveOpts,
-  SubdivideCurveOpts,
   rotateCurve,
   Point,
   Curve,

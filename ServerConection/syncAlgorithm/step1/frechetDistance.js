@@ -47,7 +47,6 @@ const frechetDistance = (curve1, curve2) => {
     }
     prevResultsCol = curResultsCol;
   }
-
   return prevResultsCol[shortCurve.length - 1];
 };
 

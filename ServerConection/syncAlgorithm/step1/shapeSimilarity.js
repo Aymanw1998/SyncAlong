@@ -4,7 +4,7 @@ const { findProcrustesRotationAngle, procrustesNormalizeCurve } = require('./pro
 
 let estimationPoints = 50;
 let rotations = 10;
-let restrictRotationAngle = Math.PI;
+let restrictRotationAngle = Math.PI / 6;
 let checkRotations = true;
 
 
@@ -17,12 +17,12 @@ let checkRotations = true;
  * @returns between 1 and 0 depending on how similar the shapes are, where 1 means identical.
  */
 
-let options = {
-  estimationPoints,
-  rotations,
-  restrictRotationAngle,
-  checkRotations
-};
+// let options = {
+//   estimationPoints,
+//   rotations,
+//   restrictRotationAngle,
+//   checkRotations
+// };
 
 const shapeSimilarity = (
   curve1,
@@ -50,6 +50,7 @@ const shapeSimilarity = (
       normalizedCurve1,
       normalizedCurve2
     );
+    // console.log('Math.PI', procrustesTheta, Math.abs(procrustesTheta), restrictRotationAngle);
     // use a negative rotation rather than a large positive rotation
     if (procrustesTheta > Math.PI) {
       procrustesTheta = procrustesTheta - 2 * Math.PI;
@@ -64,12 +65,15 @@ const shapeSimilarity = (
       const theta =
         -1 * restrictRotationAngle +
         (2 * i * restrictRotationAngle) / (rotations - 1);
+      //  console.log('theta', theta);
+
       // 0 and Math.PI are already being checked, no need to check twice
       if (theta !== 0 && theta !== Math.PI) {
         thetasToCheck.push(theta);
       }
     }
   }
+  //console.log('thetasToCheck', thetasToCheck, thetasToCheck.length);
 
   let minFrechetDist = Infinity;
   // check some other thetas here just in case the procrustes theta isn't the best rotation

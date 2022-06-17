@@ -15,8 +15,8 @@ const cors = require('cors');
 const { both_down, right_leg_up, left_leg_up } = require('./tests/legs/t1');
 const { both_hands_down, both_hands_up_90, left_hand_90, right_hand_90 } = require('./tests/hands/t1');
 const { testLefts, testRights, testwithActive, testAngels } = require('./tests/index');
-// const similarity = testwithActive(both_hands_down, both_hands_up_90, "hands-x");
-const similarity = testAngels(both_hands_down, both_hands_up_90, "right-hand-up");
+const similarity = testwithActive(both_hands_down, both_hands_up_90, "hands-x");
+//const similarity = testAngels(both_hands_down, both_hands_up_90, "right-hand-up");
 *************************************************************************
  */
 
