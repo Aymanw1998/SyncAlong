@@ -1,6 +1,6 @@
-const data = require('./activities.json');
 const { activities } = require('./activity_list');
 
+/* A function returns a list of activities sorted according to an array of limitations */
 const tailoredActivities = (limitations) => {
     let system_activity_offers = [];
     if (limitations) {
@@ -11,10 +11,8 @@ const tailoredActivities = (limitations) => {
                 system_activity_offers = obj;
                 return obj;
             }, {});
-        // console.log(system_activity_offers);
         return system_activity_offers;
     }
-    //all activity is good
     else {
         system_activity_offers = activities;
         return activities;

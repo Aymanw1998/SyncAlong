@@ -6,7 +6,6 @@ const { User } = require('../models/users');
 //for privit routes
 // Checks whether the token of tha user is valid or not
 exports.protect = asyncHandler(async (req, res, next) => {
-    // let token = req.header('authorization');
     let token;
     if (
         req.headers.authorization &&
@@ -21,7 +20,6 @@ exports.protect = asyncHandler(async (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, process.env.TOKEN);
-        //console.log('decoded', decoded);
         req.user = await User.findById(decoded._id);
         req.email = decoded.email;
         req._id = decoded._id

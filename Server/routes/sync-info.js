@@ -7,7 +7,6 @@ const {
     createMeetingSync,
     getMySyncs,
     getTopSyncs,
-    // getTraineeSync,
     getTraineesSync,
 } = require('../controllers/sync-info');
 

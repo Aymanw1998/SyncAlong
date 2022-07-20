@@ -21,7 +21,6 @@ const getMeetings = asyncHandler(async (req, res, next) => {
   }
   let meetings = null;
   meetings = await Meeting.find({ tariner: req.user._id }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
-  console.log(req.user._id, 'meetings', meetings.length);
   if (meetings.length === 0 || meetings === null)
     meetings = await Meeting.find({ trainee: req.user._id }).populate('tariner trainee', '_id user role avatar').sort({ date: -1 })
 
@@ -33,7 +32,7 @@ const getMeetings = asyncHandler(async (req, res, next) => {
 //filter to get the meeting thet are in the futcer 
 const machDates = (date, now) => {
   if (date.getDate() == now.getDate()) {
-    if (date.getHours() < now.getHours()) { //-2 becose if z indwx in date
+    if (date.getHours() < now.getHours()) {
       return false;
     }
     else if (date.getHours() == now.getHours() && date.getMinutes() < now.getMinutes()) {
@@ -98,6 +97,7 @@ const getComplitedMeetings = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('No ACTIVE meeting', 401));
   return successResponse(req, res, meetings);
 });
+
 // @desc    Get list of activities the system is oferes
 // @route   GET /api/meetings/ouractivities/:id
 // @access  Private 
@@ -212,10 +212,6 @@ const setRandomActivities = (options) => {
 // @route   POST /api/meetings/
 // @access  Private with token
 const createMeeting = asyncHandler(async (req, res, next) => {
-  //body: name, trainee(id), date(no must), room (name/id)
-  //date : [y, m, d, h, m]
-  //when calling creact -MUSt do a call for getCustomActivities fist - from that the user chose the activityies
-  //get my trainees from my profile
   const myProfile = await Profile.findById(req.user.profile_id);
   let isAuthorize = await authorize(req.body.trainee, myProfile.trainerOf);
   if (!isAuthorize) {
@@ -245,17 +241,7 @@ const createMeeting = asyncHandler(async (req, res, next) => {
   }
 
   req.body.date = new Date(req.body.date);
-
-  // let myDate = new Date(req.body.date);
-  // let trut_date = new Date(myDate.getFullYear(), myDate.getMonth(), myDate.getDate(), myDate.getHours() + 3, myDate.getMinutes())
-  // req.body.date = trut_date;
-  // console.log(req.body.date.getFullYear());
-  // console.log(req.body.date.getMonth());
-  // console.log(req.body.date.getDate());
-  // console.log(req.body.date.getTime());
-  //console.log(req.body.date.getHours());
-
-  let meeting = await Meeting.create(req.body)//.populate('tariner trainee', '_id user role avatar')
+  let meeting = await Meeting.create(req.body)
   let m2 = {
     _id: meeting._id,
     title: meeting.title,
@@ -280,23 +266,11 @@ const createMeeting = asyncHandler(async (req, res, next) => {
 // @access  Private with token
 const updateMeeting = asyncHandler(async (req, res, next) => {
   let meeting = null;
-  console.log('req.body update', req.body);
-  //whan updates status to activity thet is ended:
-  //trainer & trainee can do this call 
-  //each one of them - apans automaticly when meeting is ended.
-  // let profile = await Profile.findByIdAndUpdate(req.user.profile_id,
-  //   {
-  //     $pull: { meetings: req.params.id },
-  //     $push: { ended_meetings: req.params.id }
-  //   },
-  // )
-
   if (req.body.status === true) {
     await Meeting.findOneAndUpdate({ status: true }, { status: false });
   }
 
   meeting = await Meeting.updateOne({ _id: req.params.id }, req.body);
-
   if (!meeting)
     return next(new ErrorResponse('No ACTIVE meeting', 401));
   return successResponse(req, res, meeting);
@@ -306,12 +280,10 @@ const updateMeeting = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/meetings/:name
 // @access  Private with token
 const deleteMeeting = asyncHandler(async (req, res, next) => {
-  console.log(req.params.id);
   let meeting = null;
-  console.log('req.user.role ', req.user.role);
   if (req.user.role === 'trainer')
     meeting = await Meeting.deleteOne({ _id: req.params.id });
-  else  //console.log('in trainee');
+  else
     return next(new ErrorResponse('trainee cant do delete... sorry', 401));
 
   if (!meeting) return new ErrorResponse(`faild to delete`, 401)

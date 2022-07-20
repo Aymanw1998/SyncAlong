@@ -1,14 +1,8 @@
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { array } = require('joi');
-
 const body_areas = ['arms', 'abdomen', 'legs_knees', 'lower_back', 'upper_back', 'none']
 
 const profileSchema = new mongoose.Schema({
-  name: {
-    type: String,
-  },
+  name: { type: String, },
   relation: { type: String },
   address: { type: String },
   phone: { type: String },
@@ -18,7 +12,6 @@ const profileSchema = new mongoose.Schema({
   gender: { type: String },
   about: { type: String },
   hobbies: { type: String },
-
   trainerOf: [
     {
       //Indicates of the user-manager of trainee user who craeted by this.user._id (i can open user to my grama & naibar)
@@ -33,14 +26,6 @@ const profileSchema = new mongoose.Schema({
   limitations: [{
     type: String,
     enum: body_areas,
-  }],
-  meetings: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'meetings'
-  }],
-  ended_meetings: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'meetings'
   }],
   createdAt: {
     type: Date,

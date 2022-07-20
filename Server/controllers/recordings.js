@@ -5,12 +5,11 @@ const { Meeting } = require('../models/meetings');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const { successResponse } = require('../utils/successResponse');
-// חשבתי שאנחנו נשמור ןידי ןגם תמונות אז בגלל ככה עשיתי אותו דינמי
+
 // @desc    get Recording
 // @route   
 // @access  Private
 const getRecording = asyncHandler(async (res, req, next) => {
-  // body: url
   const url = req.body.url;
   if (!url) {
     return false;
@@ -23,9 +22,6 @@ const getRecording = asyncHandler(async (res, req, next) => {
 // @route   POST /api/Recordings/
 // @access  Private
 const uploadRecording = asyncHandler(async (req, res, next) => {
-  // the Recording sent
-  //console.log('req.Recording: ', req.file);
-  // myRecording is array [name,type]
   let myFile = req.file.originalname.split('.');
   // save the type file in the variable
   const typeMyFile = myFile[myFile.length - 1];
@@ -42,12 +38,10 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
   let url = null;
   try {
     await s3.write(buffer, key, bucket);
-    // console.log('uploaded');
     url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
   } catch (error) {
     return next(new ErrorResponse('cannot save', 401));
   }
-  /// console.log('url: ', url);
   data = await Recording.create({
     name: key,
     meeting_id: req.params.id,
@@ -60,12 +54,9 @@ const uploadRecording = asyncHandler(async (req, res, next) => {
     urlRoom: url,
     dateEnd
   });
-  // console.log('meeting', meeting);
   if (!meeting)
     return next(new ErrorResponse('meeting', 401));
   return successResponse(req, res, { url, meeting_id: req.params.id, dateEnd });
-
-  // return successResponse(req, res, meeting);
 });
 
 // @desc    Delete Recording from AWS S3 storage

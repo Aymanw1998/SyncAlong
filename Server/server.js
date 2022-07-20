@@ -76,12 +76,7 @@ app.use('/api/syncperformance', syncPerformance);
 //for catch 500-400 errors
 app.use(errorHandler);
 
-//socket connection
 const httpServer = http.createServer(app)
-// const socker = require('./socker');
-// socker(httpServer);
-
-//lisining....
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV;
 httpServer.listen(

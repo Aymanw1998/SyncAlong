@@ -102,20 +102,12 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 // @desc    Delete profile
 // @route   DELETE /api/profiles/
 // @access  Private with token
-// not tested!!!!!!!!
 const deleteProfile = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'trainee') {
     return next(
       new ErrorResponse(`you cannot delete yourself, you are trainee`, 401)
     );
   }
-  //TO DO
-  //when i delete my profile it delets the list of my trainess ....
-  // need to handle when creating profile if any user has my user._id as there trinerOf element in profile modle
-  //if there is -needs to add them in my trainerOf list when insert new profile 
-  // NEED TO DO IN craeteProfile()
-  //NOt handled yet......
-
   //when user has profile
   if (req.user.profile_id) {
     //clear profile elemet in user modle
@@ -123,7 +115,6 @@ const deleteProfile = asyncHandler(async (req, res, next) => {
     if (!profile_user)
       return next(new ErrorResponse(`set profie_id to undifined failed`, 402));
 
-    //it mait 
     // delete profile of user
     await Profile.deleteOne({ _id: req.user.profile_id }, (err, data) => {
       if (err) {
@@ -139,7 +130,6 @@ const deleteProfile = asyncHandler(async (req, res, next) => {
 // @desc    Delete profile
 // @route   DELETE /api/profiles/trainee/:id
 // @access  Private with token
-// not tested!!!!!!!!
 const deleteTraineeProfile = asyncHandler(async (req, res, next) => {
   //chack me -if im valid 
   const profile = await Profile.findById(req.user.profile_id);
@@ -237,8 +227,6 @@ const updateTraineeProfile = asyncHandler(async (req, res, next) => {
     );
   }
   let testExistUser = await User.findById(req.params.id);
-  console.log(testExistUser);
-
   if (!testExistUser) {
     return next(new ErrorResponse(`The user with id: ${req.params.id} does not exist`, 404));
   }

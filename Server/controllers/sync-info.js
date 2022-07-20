@@ -7,7 +7,6 @@ const { User } = require('../models/users');
 const { Profile } = require('../models/profiles');
 
 
-
 // @desc    Get all syncs
 // @route   GET /api/syncperformance/all
 // @access  Public
@@ -58,13 +57,6 @@ const getTopSyncs = asyncHandler(async (req, res, next) => {
     else return next(new ErrorResponse(`Not found results`, 404));
 });
 
-// const getTraineeSync = asyncHandler(async (req, res, next) => {
-//     const syncPerformance = await SyncPerformance.find({ trainee: req.params.id }).sort({ dateEnd: -1 });
-//     if (syncPerformance) return successResponse(req, res, syncPerformance);
-//     else return next(new ErrorResponse(`Not found results`, 404));
-// });
-
-
 const getTraineesSync = asyncHandler(async (req, res, next) => {
     if (req.user.role !== 'trainer' || !req.user.profile_id) {
         return next(
@@ -78,18 +70,12 @@ const getTraineesSync = asyncHandler(async (req, res, next) => {
     if (trainerOf.length > 0) {
         for (var i = 0; i < trainerOf.length; i++) {
             let id = trainerOf[i];
-            // console.log('id', id);
             let user = await User.findById(id);
             let syncs = await SyncPerformance.find({ trainee: id });
             friends.push({ user, syncs });
         }
-        //  console.log('friends', friends);
     }
     return successResponse(req, res, friends);
-
-    // const syncPerformance = await SyncPerformance.find({ trainee: req.params.id }).sort({ dateEnd: -1 });
-    // if (syncPerformance) return successResponse(req, res, syncPerformance);
-    // else return next(new ErrorResponse(`Not found results`, 404));
 });
 
 module.exports = {
@@ -98,5 +84,4 @@ module.exports = {
     getTopSyncs,
     createMeetingSync,
     getTraineesSync,
-    // deleteSyncScore
 };

@@ -87,7 +87,6 @@ const getUserById = asyncHandler(async (req, res, next) => {
 // @route   POST /api/users/
 // @access  Pablic
 const createUser = asyncHandler(async (req, res, next) => {
-  console.log(req.body);
   //Defines the level of encryption
   let salt = await bcrypt.genSalt(Number(process.env.SALT_KEY));
   req.body.password = await bcrypt.hash(req.body.password, salt);
@@ -133,7 +132,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
     user = await User.findOne({ email: req.body.email }).select('+password');
   else if (req.body.username)
     user = await User.findOne({ username: req.body.username }).select('+password');
-  console.log(user);
 
   if (user) {
     // Checks if the password matches the user
@@ -162,7 +160,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/users/
 // @access  Private
 const updateUser = asyncHandler(async (req, res, next) => {
-  console.log('req.body', req.body);
   req.body.updateAt = Date.now();
   if (req.body.password) {
     //Defines the level of encryption
@@ -182,8 +179,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
 const updateAvatar = asyncHandler(async (req, res, next) => {
   // the Recording sent
-  console.log('req.Recording: ', req.file);
-  // myRecording is array [name,type]
   let myFile = req.file.originalname.split('.');
   // save the type file in the variable
   const typeMyFile = myFile[myFile.length - 1];
@@ -191,17 +186,12 @@ const updateAvatar = asyncHandler(async (req, res, next) => {
   const key = `Avatars/${uuid()}.${typeMyFile}`;
   const bucket = process.env.AWS_BUCKET_NAME;
   await s3.write(buffer, key, bucket);
-  console.log('uploaded');
   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
-  console.log('url: ', url);
   let data = await User.updateOne({ _id: req.user._id }, { avatar: url });
   if (data) return successResponse(req, res, url);
 });
 
 const updateAvatarTrainee = asyncHandler(async (req, res, next) => {
-  // the Recording sent
-  console.log('req.Recording: ', req.file);
-  // myRecording is array [name,type]
   let myFile = req.file.originalname.split('.');
   // save the type file in the variable
   const typeMyFile = myFile[myFile.length - 1];
@@ -209,9 +199,7 @@ const updateAvatarTrainee = asyncHandler(async (req, res, next) => {
   const key = `Avatars/${uuid()}.${typeMyFile}`;
   const bucket = process.env.AWS_BUCKET_NAME;
   await s3.write(buffer, key, bucket);
-  console.log('uploaded');
   const url = await s3.getSignedURL(process.env.AWS_BUCKET_NAME, key, 60);
-  console.log('url: ', url);
   let data = await User.updateOne({ _id: req.params.id }, { avatar: url });
   if (data) return successResponse(req, res, url);
 });
@@ -233,7 +221,6 @@ const deleteUser = asyncHandler(async (req, res, next) => {
       if (trainerOf.length > 0) {
         for (var i = 0; i < trainerOf.length; i++) {
           let id = trainerOf[i]; //user trainee
-          console.log('id', id);
           req.params.id = id;
           //for now, don't do this, maybe has errors
           //await deleteFriend(req, res, next);
@@ -243,7 +230,6 @@ const deleteUser = asyncHandler(async (req, res, next) => {
     }
     return successResponse(req, res, 'need fixing , not dose anything for now');
 
-    //// its deletes but dose a wired Erorr!!!!!!!!!!! fix later!!!!!!
     //TO DO - delete all data related to this user._id in all colections in db
     // await User.deleteOne({ _id: req.user._id }, (err, data) => {
     //   if (err) {
@@ -356,7 +342,7 @@ const deleteTrainee = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`User is not authorize`, 403));
 
   //delete from the array of user thet crared
-  //!!!!Remeber To Myself!!!!! in client-side need a pop-up saying to the user all documents,video and activity with this user._id will be deleted.
+  //!!!!Remeber!!!!! in client-side need a pop-up saying to the user all documents,video and activity with this user._id will be deleted.
   //If they will not be deleted the server may call a non-existent _id and throw an Error while trying to get simple data from db
   const objId = new ObjectId(req.params.id);
   let data = await Profile.findOneAndUpdate(
@@ -461,6 +447,8 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 
   sendTokenResponse(user, 200, res);
 });
+
+
 module.exports = {
   getUsers,
   getUser,
