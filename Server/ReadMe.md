@@ -3,7 +3,7 @@ A server is responsible for requests that go through the https protocol only.
 Built in nodejs using express library.
 
 ### Server architecture 🔥🔥
-...coming soon....
+![schem](https://user-images.githubusercontent.com/48565585/182790151-d6b73ba9-7b42-4d61-9fac-55c2e2dba09e.PNG)
 
 ## Technologies used:
 - [X] NodeJs & Express - a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
