@@ -1,27 +1,12 @@
-const { arrAverage, arrSum } = require('./utils');
-const {
-  Curve,
-  Point,
-  rebalanceCurve,
-  rotateCurve,
-  subtract
-} = require('./geometry');
-
-let rebalance, estimationPoints;
-let ProcrustesNormalizeCurveOpts = {
-  rebalance, //bool
-  estimationPoints, //num
-}
+const { arrAverage, arrSum } = require('../geometry/utils');
+const { rebalanceCurve, subtract } = require('../geometry/geometry');
 
 /**
  * Translate and scale curve by Procrustes Analysis
- *
  * Optionally runs [[rebalanceCurve]] first (default true)
  * from https://en.wikipedia.org/wiki/Procrustes_analysis
- * @param curve
- * @param options
  */
-const procrustesNormalizeCurve = (
+const procrustesNormalizeLandmarks = (
   curve,
   options
 ) => {
@@ -58,8 +43,6 @@ const procrustesNormalizeCurve = (
  * from https://en.wikipedia.org/wiki/Procrustes_analysis
  * `curve` and `relativeCurve` must have the same number of points
  * `curve` and `relativeCurve` should both be run through [[procrustesNormalizeCurve]] first
- * @param curve
- * @param relativeCurve
  */
 const findProcrustesRotationAngle = (
   curve,
@@ -79,26 +62,8 @@ const findProcrustesRotationAngle = (
   return Math.atan2(numerator, denominator);
 };
 
-/**
- * Rotate `curve` to match the rotation of `relativeCurve` using procrustes analysis
- *
- * from https://en.wikipedia.org/wiki/Procrustes_analysis
- * `curve` and `relativeCurve` must have the same number of points
- * `curve` and `relativeCurve` should both be run through [[procrustesNormalizeCurve]] first
- * @param curve
- * @param relativeCurve
- */
-// const procrustesNormalizeRotation = (
-//   curve,
-//   relativeCurve
-// ) => {
-//   const angle = findProcrustesRotationAngle(curve, relativeCurve);
-//   return rotateCurve(curve, angle);
-// };
-
 module.exports = {
   // procrustesNormalizeRotation,
-  procrustesNormalizeCurve,
-  findProcrustesRotationAngle,
-  ProcrustesNormalizeCurveOpts
+  procrustesNormalizeLandmarks,
+  findProcrustesRotationAngle
 };

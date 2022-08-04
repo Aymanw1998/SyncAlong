@@ -1,5 +1,4 @@
-const {
-  Curve, pointDistance } = require('./geometry');
+const { pointDistance } = require('../geometry/geometry');
 
 /**
  * Discrete Frechet distance between 2 curves

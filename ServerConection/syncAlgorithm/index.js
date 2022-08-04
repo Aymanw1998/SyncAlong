@@ -1,14 +1,14 @@
-{/* STEP 1
+{/* 
     Euclidean Distance, Scaling and Transformation 
     bacied Procrustes analysis.
     link-info: https://en.wikipedia.org/wiki/Procrustes_analysis
 */}
-const { shapeSimilarity } = require('./step1/shapeSimilarity');
-const { filter_poses_curr_action } = require('./filter_poses_curr_action');
-const { getActivityBottom } = require('./points_parts');
+const { shapeSimilarity } = require('./shapeSimilarity');
+const { filter_poses_curr_action } = require('./helpers/filter_poses_curr_action');
+const { getActivityBottom } = require('./helpers/points_parts');
 
 
-const procrustes_analysis = (data) => {
+const syncSimilarity = (data) => {
     let is_bottom = getActivityBottom(data.activity);
     if (data.you.poses === undefined || data.me.poses === undefined) return;
     //filter peers by the curr activity and key poits
@@ -60,12 +60,12 @@ const procrustes_analysis = (data) => {
 
             console.log('similarity_bottom_side1', similarity_bottom_side1, "similarity_bottom_side2", similarity_bottom_side2, 'similarity_bottom_avg', similarity_bottom_avg);
 
-            return total_similarity_avg * 0.7 + similarity_bottom_avg * 0.3; // upper is 80% and lower 20% of the total value
+            return total_similarity_avg * 0.7 + similarity_bottom_avg * 0.3; // upper is 70% and lower 30% of the total value
         }
-        else return total_similarity_avg; //if noting else 
+        else return total_similarity_avg; //if noting  
     }
 }
 
 module.exports = {
-    procrustes_analysis
+    syncSimilarity
 };

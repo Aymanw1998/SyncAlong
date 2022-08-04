@@ -15,7 +15,7 @@ const filterByKeyPoints = (pose_peer, parts) => {
     let result = [];
     result = [];
 
-    for (const i in pose_peer) { // [ [],[],[], null ] // [ [] ]
+    for (const i in pose_peer) { //  case to handel : [ [],[],[], null ] // [ [] ]
         if (pose_peer[i] === null) {
             console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
             return null;
@@ -26,33 +26,6 @@ const filterByKeyPoints = (pose_peer, parts) => {
     }
     return result;
 }
-
-// const filterByKeyPoints = (pose_peer, parts) => {
-//     let is_null_arr = pose_peer.find(el => el === null);
-//     if (is_null_arr) {
-//         console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
-//         return null;
-//     }
-//     let result = [];
-//     let poses = [];
-//     for (const i in pose_peer) { // [ [],[],[], null ] // [ [] ]
-//         result = [];
-//         if (pose_peer[i] === null) {
-//             console.log(`pose_peer-nulls, ${pose_peer}`.red.bold);
-//             return null;
-//         }
-//         for (const j in parts) {
-//             let index = parts[j];
-//             if (pose_peer.length === 33) {
-//                 result.push(pose_peer[index]);
-//             }
-//             else
-//                 result.push(pose_peer[i][index]);
-//         }
-//         poses.push(result);
-//     }
-//     return poses;
-// }
 
 const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
     let in_upper, in_bottom = null;
@@ -79,7 +52,6 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
 
 
     if ((in_upper && in_bottom) || (!in_upper && !in_bottom)) { //activity in all body parts 
-        console.log('dkdkdkdkdkkd');
         is_all_body = true;
         //bottom: 
         filtered_left_1_bottom = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
@@ -104,13 +76,6 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
         filtered_right_2 = filterByKeyPoints(pose_peer2, upper_part.right_hand);
     }
     else if (in_upper && !curr_activity.includes("right") && !curr_activity.includes("left")) {
-        // let both_hands = []
-        // both_hands.push(...upper_part.left_hand)
-        // both_hands.push(...upper_part.right_hand)
-        // console.log('both_hands', both_hands);
-        // filtered_pose1 = filterByKeyPoints(pose_peer1, both_hands);
-        // filtered_pose2 = filterByKeyPoints(pose_peer2, both_hands);
-
         filtered_left_1 = filterByKeyPoints(pose_peer1, upper_part.left_hand);
         filtered_right_1 = filterByKeyPoints(pose_peer1, upper_part.right_hand);
         filtered_left_2 = filterByKeyPoints(pose_peer2, upper_part.left_hand);
@@ -128,14 +93,6 @@ const filter_poses_curr_action = (curr_activity, pose_peer1, pose_peer2) => {
     }
     else if (bottom_part && !curr_activity.includes("right") && !curr_activity.includes("left")) {
         console.log('allllllll', bottom_part);
-
-        // let both_legs = []
-        // both_legs.push(...bottom_part.left_leg)
-        // both_legs.push(...bottom_part.right_leg)
-        // console.log('allllllll-both_legs', both_legs);
-        // filtered_pose1 = filterByKeyPoints(pose_peer1, both_legs);
-        // filtered_pose2 = filterByKeyPoints(pose_peer2, both_legs);
-
         filtered_left_1 = filterByKeyPoints(pose_peer1, bottom_part.left_leg);
         filtered_right_1 = filterByKeyPoints(pose_peer1, bottom_part.right_leg);
         filtered_left_2 = filterByKeyPoints(pose_peer2, bottom_part.left_leg);

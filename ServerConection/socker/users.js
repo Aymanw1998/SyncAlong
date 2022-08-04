@@ -1,5 +1,5 @@
 const users = [];
-//{userId, socketId, roomId, mediapipe,frame}
+//users is type of : {userId, socketId, roomId, mediapipe}
 
 const addUser = (userId, socketId, roomId) => {
   //when exists - replace his socket id to curr socket 
@@ -9,7 +9,6 @@ const addUser = (userId, socketId, roomId) => {
       return;
     }
   });
-  //console.log('add', userId, socketId, roomId);
   //add user to array only if he is not there
   let mediapipe = [];
   !users.some((user) => user.userId === userId) &&
@@ -80,7 +79,7 @@ const getUsersInRoom = (roomId) => {
 const getUsers = () => { return users; }
 
 const pushMediaPipe = (data, mySocketId, yourSocketId, trainer, activity, roomId) => {
-  // data= {
+  // typeof data= {
   //   poses: posesArry,
   //   time : timeOfColectionPose,
   // }
