@@ -8,7 +8,6 @@ const cookieParser = require('cookie-parser');
 
 const errorHandler = require('./middleware/err');
 const connectDB = require('./config/db');
-const socket = require('socket.io');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
